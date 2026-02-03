@@ -2,24 +2,37 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 
+// Global cache for Vercel
+let app: any;
+
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
-  app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
-  // app.enableCors(); // CORS is handled in dynamic configuration or standard pattern
-  app.enableCors({
-    origin: '*', // Allow all for Vercel/Production simplicity initially, or configure strict
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-    credentials: true,
-  });
-
-  // Only listen if not running in Vercel (Vercel handles the server lifecycle)
-  if (!process.env.VERCEL) {
-    await app.listen(process.env.PORT ?? 3000);
+  if (!app) {
+    app = await NestFactory.create(AppModule);
+    app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
+    app.enableCors({
+      origin: '*', // Allow all
+      methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+      credentials: true,
+    });
+    await app.init();
   }
+  // Return the native Express instance
+  return app.getHttpAdapter().getInstance();
+}
 
-  return app; // Export app for Vercel
-}
+// Local Development
 if (!process.env.VERCEL) {
-  bootstrap();
+  (async () => {
+    const localApp = await NestFactory.create(AppModule);
+    localApp.useGlobalPipes(new ValidationPipe({ whitelist: true }));
+    localApp.enableCors({ origin: '*' });
+    await localApp.listen(process.env.PORT ?? 3000);
+    console.log(`Application is running on: ${await localApp.getUrl()}`);
+  })();
 }
-export default bootstrap;
+
+// Vercel Entry Point
+export default async function handler(req: any, res: any) {
+  const instance = await bootstrap();
+  return instance(req, res);
+}
