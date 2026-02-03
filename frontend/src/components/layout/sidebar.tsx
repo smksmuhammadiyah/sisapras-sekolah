@@ -26,7 +26,9 @@ import { useState } from 'react';
 
 // ... imports are fine at top ...
 
-export function Sidebar({
+// ... imports at top
+
+export default function Sidebar({
   isCollapsed,
   toggleCollapse,
   isMobile,
