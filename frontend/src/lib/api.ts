@@ -1,8 +1,16 @@
 import axios from 'axios';
 import { toast } from 'sonner';
 
+const getBaseUrl = () => {
+  let url = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+  if (!url.startsWith('http')) {
+    url = `https://${url}`;
+  }
+  return url;
+};
+
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000',
+  baseURL: getBaseUrl(),
   headers: {
     'Content-Type': 'application/json',
   },
