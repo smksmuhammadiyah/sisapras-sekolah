@@ -1,0 +1,229 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  STAFF
+  KAPROG
+  USER
+  GUEST
+}
+
+enum AssetCondition {
+  GOOD
+  BROKEN_LIGHT
+  BROKEN_HEAVY
+}
+
+enum StockTransactionType {
+  IN
+  OUT
+}
+
+enum ProcurementPriority {
+  HIGH
+  NORMAL
+  LOW
+}
+
+enum ProcurementStatus {
+  PENDING
+  REVIEW_WAKASEK
+  APPROVED
+  REJECTED
+}
+
+enum AuditStatus {
+  DRAFT
+  COMPLETED
+}
+
+model User {
+  id         String   @id @default(uuid())
+  username   String   @unique
+  email      String?  @unique
+  password   String
+  fullName   String?
+  role       Role     @default(GUEST)
+  isApproved Boolean  @default(false)
+  createdAt  DateTime @default(now())
+ 
+  audits           Audit[]
+  procurements     Procurement[]
+  stockTransactions StockTransaction[]
+  reportedServices Service[] @relation("ServiceReporter")
+}
+
+model Room {
+  id        String  @id @default(uuid())
+  name      String
+  type      String?
+  location  String?
+  assets    Asset[]
+  deletedAt DateTime?
+}
+
+model Asset {
+  id            String         @id @default(uuid())
+  code          String         @unique
+  name          String
+  category      String
+  spec          String?
+  brand         String?
+  origin        String?
+  purchaseDate  DateTime
+  purchaseYear  Int?
+  price         Float?
+  isWhiteListed Boolean?       @default(false)
+  
+  condition     AssetCondition @default(GOOD)
+  
+  roomId        String?
+  room          Room?          @relation(fields: [roomId], references: [id])
+  
+  managedById   String?
+  
+  auditItems    AuditItem[]
+  services      Service[]
+  
+  deletedAt     DateTime?
+}
+
+model Audit {
+  id        String      @id @default(uuid())
+  date      DateTime    @default(now())
+  status    AuditStatus @default(COMPLETED)
+  
+  auditorId String
+  auditor   User    @relation(fields: [auditorId], references: [id])
+  
+  academicYearId String?
+  academicYear   AcademicYear? @relation(fields: [academicYearId], references: [id])
+
+  items     AuditItem[]
+}
+
+model AuditItem {
+  id        String        @id @default(uuid())
+  auditId   String
+  audit     Audit         @relation(fields: [auditId], references: [id])
+  
+  assetId   String
+  asset     Asset         @relation(fields: [assetId], references: [id])
+  
+  condition AssetCondition
+  note      String?
+}
+
+model Service {
+  id           String   @id @default(uuid())
+  date         DateTime @default(now())
+  type         String
+  cost         Float
+  technician   String?
+  notes        String?
+  
+  assetId      String
+  asset        Asset    @relation(fields: [assetId], references: [id])
+
+  reportedById String?
+  reportedBy   User?    @relation("ServiceReporter", fields: [reportedById], references: [id])
+  
+  academicYearId String?
+  academicYear   AcademicYear? @relation(fields: [academicYearId], references: [id])
+}
+
+model StockItem {
+  id           String             @id @default(uuid())
+  name         String
+  unit         String
+  spec         String?
+  minStock     Int                @default(0)
+  quantity     Int                @default(0)
+  
+  transactions StockTransaction[]
+}
+
+model StockTransaction {
+  id          String               @id @default(uuid())
+  date        DateTime             @default(now())
+  type        StockTransactionType
+  quantity    Int
+  notes       String?
+  
+  stockItemId String
+  stockItem   StockItem            @relation(fields: [stockItemId], references: [id])
+  
+  userId      String
+  user        User                 @relation(fields: [userId], references: [id])
+  
+  academicYearId String?
+  academicYear   AcademicYear? @relation(fields: [academicYearId], references: [id])
+}
+
+model Procurement {
+  id              String            @id @default(uuid())
+  title           String
+  description     String?
+  priority        ProcurementPriority
+  totalBudget     Float
+  status          ProcurementStatus @default(PENDING)
+  rejectionReason String?
+  createdAt       DateTime          @default(now())
+  
+  requesterId     String
+  requester       User              @relation(fields: [requesterId], references: [id])
+  
+  academicYearId String?
+  academicYear   AcademicYear? @relation(fields: [academicYearId], references: [id])
+  
+  items           ProcurementItem[]
+  
+  deletedAt       DateTime?
+}
+
+model ProcurementItem {
+  id            String      @id @default(uuid())
+  name          String
+  spec          String?
+  quantity      Int
+  priceEst      Float
+  totalEst      Float
+  
+  procurementId String
+  procurement   Procurement @relation(fields: [procurementId], references: [id])
+}
+
+model SchoolSettings {
+  id            String  @id @default(uuid())
+  name          String  @default("SMK Negeri 1 Contoh")
+  address       String  @default("Jl. Pendidikan No. 1")
+  phone         String  @default("(021) 1234567")
+  email         String  @default("info@smkn1contoh.sch.id")
+  website       String?
+  
+  headmaster    String  @default("Drs. Kepala Sekolah, M.Pd")
+  nipHeadmaster String  @default("19800101 200001 1 001")
+  
+  sarprasName   String  @default("Wakasek Sarpras, S.Pd")
+  nipSarpras    String  @default("19850101 200501 1 001")
+}
+
+model AcademicYear {
+  id        String   @id @default(uuid())
+  name      String
+  isActive  Boolean  @default(false)
+  startDate DateTime
+  endDate   DateTime
+  
+  audits            Audit[]
+  services          Service[]
+  procurements      Procurement[]
+  stockTransactions StockTransaction[]
+}
