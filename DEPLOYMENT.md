@@ -10,23 +10,39 @@ Aplikasi ini terdiri dari dua bagian yang berjalan terpisah:
 
 ---
 
-## 1️⃣ Deploy Backend & Database
+### Opsi Gratis Terbaik (Vercel Serverless)
+Saat ini, solusi paling gratis dan stabil (tanpa kartu kredit) adalah menggunakan **Vercel** untuk Frontend DAN Backend.
 
-Pilihan terbaik tergantung budget. Railway memang paling mudah, tapi berbayar setelah trial.
-
-### Opsi Gratis / Freemium (Cocok untuk Percobaan)
-1.  **Backend**: [Render.com](https://render.com) (Free Tier, server tidur jika tidak dipakai 15 menit), atau [Koyeb](https://koyeb.com) (Free Tier cukup oke).
-2.  **Database**: [Neon.tech](https://neon.tech) atau [Supabase](https://supabase.com) (Serverless Postgres Gratis 500MB).
-
-### Opsi Berbayar Murah & Stabil (Rekomendasi untuk Sekolah)
-Jika ini untuk dipakai sekolah sehari-hari, sangat disarankan menggunakan **VPS Lokal Indonesia**.
-*   **Kenapa?**: Lebih cepat (koneksi lokal), data berdaulat di Indonesia, harga fix (tidak bengkak), dan kontrol penuh.
-*   **Provider**: IDCloudHost, Biznet Gio, atau Cloudkilat.
-*   **Biaya**: Mulai dari Rp 50.000 - Rp 80.000 per bulan.
+1.  **Backend**: Deploy ke Vercel sebagai Serverless Function (sudah dikonfigurasi).
+2.  **Database**: Gunakan [Neon.tech](https://neon.tech) atau [Supabase](https://supabase.com).
+3.  **Frontend**: Deploy ke Vercel (Static/Next.js).
 
 ---
 
-### Opsi A: Menggunakan VPS (Murah & Kontrol Penuh)
+### Langkah 1: Deploy Backend (Vercel)
+1.  Pastikan Anda sudah punya akun Vercel dan GitHub.
+2.  Di Dashboard Vercel, **Add New Project** -> Import repository `sisapras-sekolah`.
+3.  **Edit Root Directory** menjadi `backend`.
+4.  Pilih Framework: **Other** (karena kita pakai NestJS Serverless).
+5.  Masukkan Environment Variables (copas dari `.env` lokal):
+    *   `DATABASE_URL` (dari Neon/Supabase)
+    *   `JWT_SECRET`, `MAIL_...`, dll.
+6.  Deploy!
+7.  **PENTING**: Copy URL domain hasilnya (misal: `https://sisapras-backend.vercel.app`). Ini adalah **API BASE URL** Anda.
+
+---
+
+### Langkah 2: Deploy Frontend (Vercel)
+1.  Kembali ke Dashboard, **Add New Project** lagi.
+2.  Import repository yang sama (`sisapras-sekolah`).
+3.  **Edit Root Directory** menjadi `frontend`.
+4.  Framework: **Next.js** (Otomatis terdeteksi).
+5.  **Environment Variables**:
+    *   `NEXT_PUBLIC_API_URL`: Isi dengan URL Backend tadi (contoh: `https://sisapras-backend.vercel.app`).
+    *   ⚠️ **Jangan pakai slash (/) di akhir URL**.
+6.  Deploy!
+
+---
 
 ### Opsi A: Menggunakan VPS (Murah & Kontrol Penuh)
 Rekomendasi Provider: DigitalOcean, IDCloudHost, Biznet Gio (mulai Rp 50rb/bulan).
