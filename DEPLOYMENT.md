@@ -12,7 +12,21 @@ Aplikasi ini terdiri dari dua bagian yang berjalan terpisah:
 
 ## 1️⃣ Deploy Backend & Database
 
-Pilihan terbaik dan termudah saat ini adalah menggunakan **Railway.app** atau **VPS (Ubuntu)**.
+Pilihan terbaik tergantung budget. Railway memang paling mudah, tapi berbayar setelah trial.
+
+### Opsi Gratis / Freemium (Cocok untuk Percobaan)
+1.  **Backend**: [Render.com](https://render.com) (Free Tier, server tidur jika tidak dipakai 15 menit), atau [Koyeb](https://koyeb.com) (Free Tier cukup oke).
+2.  **Database**: [Neon.tech](https://neon.tech) atau [Supabase](https://supabase.com) (Serverless Postgres Gratis 500MB).
+
+### Opsi Berbayar Murah & Stabil (Rekomendasi untuk Sekolah)
+Jika ini untuk dipakai sekolah sehari-hari, sangat disarankan menggunakan **VPS Lokal Indonesia**.
+*   **Kenapa?**: Lebih cepat (koneksi lokal), data berdaulat di Indonesia, harga fix (tidak bengkak), dan kontrol penuh.
+*   **Provider**: IDCloudHost, Biznet Gio, atau Cloudkilat.
+*   **Biaya**: Mulai dari Rp 50.000 - Rp 80.000 per bulan.
+
+---
+
+### Opsi A: Menggunakan VPS (Murah & Kontrol Penuh)
 
 ### Opsi A: Menggunakan VPS (Murah & Kontrol Penuh)
 Rekomendasi Provider: DigitalOcean, IDCloudHost, Biznet Gio (mulai Rp 50rb/bulan).
@@ -51,8 +65,9 @@ Rekomendasi Provider: DigitalOcean, IDCloudHost, Biznet Gio (mulai Rp 50rb/bulan
 2.  Buka [Railway.app](https://railway.app/).
 3.  Pilih "New Project" -> "Deploy from GitHub repo".
 4.  Tambahkan Service Database PostgreSQL di Railway.
-5.  Set Environment Variables (`DATABASE_URL`, `JWT_SECRET`, dll) di dashboard Railway.
-6.  Railway akan otomatis mendeteksi NestJS dan menjalankannya.
+5.  **PENTING**: Masuk ke **Settings** Service Backend -> **General** -> **Root Directory**, isi dengan `/backend`. (Jika tidak, deploy akan gagal karena file package.json tidak ditemukan di root).
+6.  Set Environment Variables (`DATABASE_URL`, `JWT_SECRET`, dll) di dashboard Railway.
+7.  Railway akan otomatis mendeteksi NestJS dan menjalankannya.
 
 ---
 
