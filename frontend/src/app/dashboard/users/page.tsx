@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import axios from "axios"
-import { Loader2, Check, X, Shield, ShieldAlert, ShieldCheck } from "lucide-react"
+import { Loader2, Check, X, Shield, ShieldAlert, ShieldCheck, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -23,6 +23,16 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 
 interface User {
   id: string
@@ -36,6 +46,7 @@ interface User {
 export default function UserManagementPage() {
   const [users, setUsers] = useState<User[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [deleteId, setDeleteId] = useState<string | null>(null)
 
   const fetchUsers = async () => {
     try {
@@ -91,6 +102,22 @@ export default function UserManagementPage() {
       fetchUsers()
     } catch (error) {
       toast.error("Gagal mengubah role")
+    }
+  }
+
+  const handleDelete = async () => {
+    if (!deleteId) return
+    try {
+      await axios.delete(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/users/${deleteId}`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      })
+      toast.success("User berhasil dihapus")
+      fetchUsers()
+    } catch (error: any) {
+      const msg = error.response?.data?.message || "Gagal menghapus user"
+      toast.error(msg)
+    } finally {
+      setDeleteId(null)
     }
   }
 
@@ -179,6 +206,10 @@ export default function UserManagementPage() {
                           <DropdownMenuItem className="text-red-600" onClick={() => handleReject(user.id)}>
                             <X className="mr-2 h-4 w-4" /> Nonaktifkan / Reject
                           </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem className="text-red-600 focus:text-red-600" onClick={() => setDeleteId(user.id)}>
+                            <Trash2 className="mr-2 h-4 w-4" /> Hapus Permanen
+                          </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </div>
@@ -189,6 +220,24 @@ export default function UserManagementPage() {
           </Table>
         </CardContent>
       </Card>
+
+      <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Apakah Anda yakin?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tindakan ini akan menghapus akun pengguna secara permanen.
+              Jika pengguna memiliki riwayat transaksi (Aset, Pengadaan, dll), penghapusan akan ditolak demi keamanan data.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Batal</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} className="bg-red-600 hover:bg-red-700">
+              Hapus
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

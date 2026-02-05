@@ -181,7 +181,7 @@ model Procurement {
   status          ProcurementStatus @default(PENDING)
   rejectionReason String?
   createdAt       DateTime          @default(now())
-  updatedAt       DateTime          @updatedAt
+  updatedAt       DateTime          @updatedAt @default(now())
   
   requesterId     String
   requester       User              @relation(fields: [requesterId], references: [id])

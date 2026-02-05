@@ -44,7 +44,21 @@ export function AssetForm({ initialData }: AssetFormProps) {
 
   const form = useForm({
     resolver: zodResolver(assetSchema),
-    defaultValues: initialData || {
+    defaultValues: initialData ? {
+      name: initialData.name || '',
+      category: initialData.category || '',
+      spec: initialData.spec || '',
+      brand: initialData.brand || '',
+      purchaseDate: initialData.purchaseDate?.split('T')[0] || new Date().toISOString().split('T')[0],
+      purchaseYear: initialData.purchaseYear?.toString() || new Date().getFullYear().toString(),
+      price: initialData.price?.toString() || '',
+      origin: initialData.origin || '',
+      condition: initialData.condition || 'GOOD',
+      assetStatus: initialData.assetStatus || 'Baru',
+      notes: initialData.notes || '',
+      roomId: initialData.roomId || '',
+      imageUrl: initialData.imageUrl || '',
+    } : {
       name: '',
       category: '',
       spec: '',

@@ -59,7 +59,6 @@ export default function Sidebar({
       { href: '/dashboard/procurement', label: 'E-Usulan', icon: ShoppingCart },
       { href: '/dashboard/services', label: 'Riwayat Servis', icon: Wrench },
       { href: '/dashboard/lending', label: 'Peminjaman Barang', icon: Package },
-      { href: '/dashboard/reports', label: 'Laporan', icon: FileText },
       { href: '/dashboard/users', label: 'Manajemen User', icon: Users },
       { href: '/dashboard/settings', label: 'Pengaturan Sekolah', icon: Building2 },
       { href: '/dashboard/admin/trash', label: 'Tong Sampah', icon: Trash2 },

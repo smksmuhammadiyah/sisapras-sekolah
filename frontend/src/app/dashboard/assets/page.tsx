@@ -16,6 +16,7 @@ import {
 import { Plus, Eye, Edit, Trash } from 'lucide-react';
 import { toast } from 'sonner';
 import { AssetImportDialog } from '@/components/assets/asset-import-dialog';
+import { AssetReportButton } from '@/components/reports/asset-report';
 
 interface Asset {
   id: string;
@@ -105,6 +106,7 @@ export default function AssetListPage() {
         <h1 className="text-3xl font-bold font-heading text-slate-900 dark:text-slate-100">Data Aset</h1>
         <div className="flex items-center gap-2 w-full md:w-auto">
           <SearchInput onSearch={setSearchTerm} className="w-full md:w-64" placeholder="Cari aset..." />
+          <AssetReportButton />
           <AssetImportDialog onSuccess={fetchAssets} />
           <Button asChild>
             <Link href="/dashboard/assets/new">

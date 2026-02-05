@@ -52,4 +52,42 @@ export class UsersService {
       data,
     });
   }
+
+  async remove(id: string): Promise<User> {
+    // 1. Check for dependencies
+    const user = await this.prisma.user.findUnique({
+      where: { id },
+      include: {
+        _count: {
+          select: {
+            procurements: true,
+            audits: true,
+            stockTransactions: true,
+            lendings: true,
+            reportedServices: true,
+          }
+        }
+      }
+    });
+
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    const hasHistory =
+      user._count.procurements > 0 ||
+      user._count.audits > 0 ||
+      user._count.stockTransactions > 0 ||
+      user._count.lendings > 0 ||
+      user._count.reportedServices > 0;
+
+    if (hasHistory) {
+      throw new Error("Cannot delete user with activity history (Procurement, Audit, Stock, etc.)");
+    }
+
+    // 2. Hard Delete
+    return this.prisma.user.delete({
+      where: { id },
+    });
+  }
 }

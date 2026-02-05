@@ -44,25 +44,49 @@ export default function AssetDetailPage() {
                 <img
                   src={asset.imageUrl}
                   alt={asset.name}
-                  className="w-full max-h-64 object-cover rounded-lg border"
+                  className="w-full max-h-80 object-cover rounded-lg border shadow-sm"
                 />
               </div>
             )}
-            <div className="flex justify-between border-b pb-2">
-              <span className="text-muted-foreground">Kategori</span>
-              <span className="font-medium">{asset.category}</span>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <span className="text-xs text-muted-foreground uppercase font-semibold">Kategori</span>
+                <p className="font-medium">{asset.category}</p>
+              </div>
+              <div className="space-y-1">
+                <span className="text-xs text-muted-foreground uppercase font-semibold">Merk / Spesifikasi</span>
+                <p className="font-medium">{[asset.brand, asset.spec].filter(Boolean).join(' / ') || '-'}</p>
+              </div>
+              <div className="space-y-1">
+                <span className="text-xs text-muted-foreground uppercase font-semibold">Tahun Perolehan</span>
+                <p className="font-medium">{asset.purchaseYear || (asset.assetStatus === 'Hasil Pemutihan' ? 'Pemutihan' : '-')}</p>
+              </div>
+              <div className="space-y-1">
+                <span className="text-xs text-muted-foreground uppercase font-semibold">Asal Barang</span>
+                <p className="font-medium">{asset.origin || '-'}</p>
+              </div>
+              <div className="space-y-1">
+                <span className="text-xs text-muted-foreground uppercase font-semibold">Harga</span>
+                <p className="font-medium">
+                  {asset.price ? new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(asset.price) : '-'}
+                </p>
+              </div>
+              <div className="space-y-1">
+                <span className="text-xs text-muted-foreground uppercase font-semibold">Lokasi</span>
+                <p className="font-medium">{asset.room?.name || 'Belum Ditentukan'}</p>
+              </div>
+              <div className="space-y-1 md:col-span-2">
+                <span className="text-xs text-muted-foreground uppercase font-semibold">Keterangan / Status</span>
+                <p className="font-medium">{asset.assetStatus || asset.notes || '-'}</p>
+              </div>
             </div>
-            <div className="flex justify-between border-b pb-2">
-              <span className="text-muted-foreground">Tahun Pembelian</span>
-              <span>{asset.purchaseYear || '-'}</span>
-            </div>
-            <div className="flex justify-between border-b pb-2">
-              <span className="text-muted-foreground">Lokasi Ruangan</span>
-              <span>{asset.room?.name || 'Belum Ditentukan'}</span>
-            </div>
-            <div className="flex justify-between border-b pb-2">
-              <span className="text-muted-foreground">Status</span>
-              <span>{asset.isBroken ? 'Rusak' : 'Aman'}</span>
+
+            <div className="pt-4 border-t mt-4">
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-medium">Tanggal Pembukuan</span>
+                <span className="text-sm text-slate-600">{new Date(asset.purchaseDate).toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
+              </div>
             </div>
           </CardContent>
         </Card>

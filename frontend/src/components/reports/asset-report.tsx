@@ -20,11 +20,11 @@ export function AssetReportButton() {
   const [data, setData] = useState<any[]>([]);
 
   const [headerData, setHeaderData] = useState<ReportHeaderData>({
-    province: "PEMERINTAH PROVINSI JAWA BARAT",
-    agency: "DINAS PENDIDIKAN",
-    schoolName: "SMK NEGERI 1 CONTOH",
-    address: "Jl. Pendidikan No. 123",
-    contacts: "Loading..."
+    province: "PIMPINAN CABANG MUHAMMADIYAH SATUI",
+    agency: "MAJELIS PENDIDIKAN DASAR DAN MENENGAH",
+    schoolName: "SMKS MUHAMMADIYAH SATUI",
+    address: "Jl. KH. Ahmad Dahlan, No.07 Ds. Makmur Jaya, Kec. Satui, Kab. Tanah Bumbu (72275)",
+    contacts: "NSPN : 69772942 NISS : 32215511 03 007 Telp: 081254721126/08525104559 - Email:smk.muhammadiyahsatui@gmail.com"
   });
   const [signatures, setSignatures] = useState<SignatureData[]>([
     { role: "Kepala Sekolah", name: "Loading...", nip: "..." },
@@ -45,9 +45,9 @@ export function AssetReportButton() {
           if (s) {
             setHeaderData(prev => ({
               ...prev,
-              schoolName: s.name,
-              address: s.address,
-              contacts: `Telp: ${s.phone} | Email: ${s.email} ${s.website ? `| Website: ${s.website}` : ''}`
+              schoolName: s.name !== "SMK Negeri 1 Contoh" ? s.name : prev.schoolName,
+              address: s.address !== "Jl. Pendidikan No. 1" ? s.address : prev.address,
+              contacts: `NSPN : 69772942 NISS : 32215511 03 007 Telp: ${s.phone} | Email: ${s.email}`
             }));
             setSignatures([
               { role: "Kepala Sekolah", name: s.headmaster, nip: s.nipHeadmaster },
@@ -87,8 +87,8 @@ export function AssetReportButton() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" className="w-full justify-start text-slate-700">
-          <Eye className="mr-2 h-4 w-4" /> Preview & Cetak PDF
+        <Button variant="outline" className="gap-2">
+          <Printer className="h-4 w-4" /> Preview
         </Button>
       </DialogTrigger>
 
@@ -111,11 +111,12 @@ export function AssetReportButton() {
         </div>
 
         <div className="flex-1 overflow-auto p-8 flex justify-center items-start">
+
           <PrintableLayout
             ref={componentRef}
-            title="Laporan Inventaris Aset"
-            subtitle="Daftar Lengkap Aset Sarana Prasarana"
-            filterDates={`Per ${new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}`}
+            title="BUKU INDUK INVENTARIS BARANG"
+            subtitle=""
+            filterDates=""
             headerData={headerData}
             onHeaderChange={(field, val) => setHeaderData(prev => ({ ...prev, [field]: val }))}
             signatures={signatures}
@@ -125,7 +126,60 @@ export function AssetReportButton() {
               setSignatures(newSigs);
             }}
           >
-            <ReportTable columns={columns} data={data} />
+            {/* Custom Table Implementation for Buku Induk Standards */}
+            <table className="w-full border-collapse border border-black text-[10px]">
+              <thead className="table-header-group">
+                <tr className="bg-orange-400 print:bg-transparent break-inside-avoid text-black">
+                  <th rowSpan={2} className="border border-black px-1 py-1 text-center font-bold w-[3%]">No</th>
+                  <th rowSpan={2} className="border border-black px-1 py-1 text-center font-bold w-[8%]">Tgl Pembukuan</th>
+                  <th rowSpan={2} className="border border-black px-1 py-1 text-center font-bold w-[10%]">Kode Barang</th>
+                  <th rowSpan={2} className="border border-black px-1 py-1 text-center font-bold w-[15%]">Nama Barang</th>
+                  <th rowSpan={2} className="border border-black px-1 py-1 text-center font-bold w-[12%]">Merk/Spesifikasi</th>
+                  <th rowSpan={2} className="border border-black px-1 py-1 text-center font-bold w-[5%] leading-tight">Tahun<br />Perolehan</th>
+                  <th rowSpan={2} className="border border-black px-1 py-1 text-center font-bold w-[7%] leading-tight">Asal<br />Barang</th>
+                  <th rowSpan={2} className="border border-black px-1 py-1 text-center font-bold w-[3%]">Qty</th>
+                  <th colSpan={3} className="border border-black px-1 py-1 text-center font-bold w-[9%]">Keadaan</th>
+                  <th rowSpan={2} className="border border-black px-1 py-1 text-center font-bold w-[10%]">Harga</th>
+                  <th rowSpan={2} className="border border-black px-1 py-1 text-center font-bold w-[8%]">Lokasi</th>
+                  <th rowSpan={2} className="border border-black px-1 py-1 text-center font-bold w-[10%]">Ket</th>
+                </tr>
+                <tr className="bg-orange-400 print:bg-transparent break-inside-avoid text-black">
+                  <th className="border border-black px-1 py-1 text-center font-bold bg-green-200 print:bg-transparent">B</th>
+                  <th className="border border-black px-1 py-1 text-center font-bold bg-yellow-200 print:bg-transparent">RR</th>
+                  <th className="border border-black px-1 py-1 text-center font-bold bg-red-200 print:bg-transparent">RB</th>
+                </tr>
+              </thead>
+              <tbody>
+                {data.length === 0 ? (
+                  <tr>
+                    <td colSpan={14} className="border border-black px-4 py-8 text-center italic text-gray-500">Belum ada data aset.</td>
+                  </tr>
+                ) : (
+                  data.map((row, idx) => (
+                    <tr key={idx} className="break-inside-avoid hover:bg-gray-50 print:hover:bg-transparent">
+                      <td className="border border-black px-1 py-1 text-center">{idx + 1}</td>
+                      <td className="border border-black px-1 py-1 text-center">{row.purchaseDate ? new Date(row.purchaseDate).toLocaleDateString('id-ID') : '-'}</td>
+                      <td className="border border-black px-1 py-1 font-mono text-[9px]">{row.code}</td>
+                      <td className="border border-black px-1 py-1">{row.name}</td>
+                      <td className="border border-black px-1 py-1">{[row.brand, row.spec].filter(Boolean).join(', ') || '-'}</td>
+                      <td className="border border-black px-1 py-1 text-center">{row.purchaseYear || '-'}</td>
+                      <td className="border border-black px-1 py-1 text-center">{row.origin || '-'}</td>
+                      <td className="border border-black px-1 py-1 text-center">1</td>
+                      {/* Conditions Checkbox */}
+                      <td className="border border-black px-1 py-1 text-center font-bold">{row.condition === 'GOOD' ? 'v' : ''}</td>
+                      <td className="border border-black px-1 py-1 text-center font-bold">{row.condition === 'BROKEN_LIGHT' ? 'v' : ''}</td>
+                      <td className="border border-black px-1 py-1 text-center font-bold">{row.condition === 'BROKEN_HEAVY' ? 'v' : ''}</td>
+
+                      <td className="border border-black px-1 py-1 text-right whitespace-nowrap">
+                        {row.price ? new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(row.price).replace(',00', '') : '-'}
+                      </td>
+                      <td className="border border-black px-1 py-1 text-center">{row.room?.name || '-'}</td>
+                      <td className="border border-black px-1 py-1 text-center text-[9px]">{row.assetStatus || row.notes || '-'}</td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
           </PrintableLayout>
         </div>
       </DialogContent>

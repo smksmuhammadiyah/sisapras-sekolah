@@ -37,7 +37,7 @@ export const PrintableLayout = forwardRef<HTMLDivElement, PrintableLayoutProps>(
       agency: "MAJELIS PENDIDIKAN DASAR DAN MENENGAH",
       schoolName: "SMKS MUHAMMADIYAH SATUI",
       address: "Jl. KH. Ahmad Dahlan, No.07 Ds. Makmur Jaya, Kec. Satui, Kab. Tanah Bumbu (72275)",
-      contacts: "NSPN : 69772942 NISS : 32215511 03 007 Telp: 081254721126 | Email: smk.muhammadiyahsatui@gmail.com",
+      contacts: "NSPN : 69772942 NISS : 32215511 03 007 Telp: 081254721126/08525104559 - Email:smk.muhammadiyahsatui@gmail.com",
       logoLeft: "", // Default empty
       logoRight: "" // Default empty
     };
@@ -178,17 +178,18 @@ export const PrintableLayout = forwardRef<HTMLDivElement, PrintableLayoutProps>(
               {renderLogo('left', data.logoLeft)}
 
               {/* Center Text */}
-              <div className="flex-1 flex flex-col items-center justify-center text-center font-serif tracking-normal text-black">
-                {renderEditable('province', data.province, "text-lg font-bold uppercase mb-0 leading-tight text-gray-700")}
-                {renderEditable('agency', data.agency, "text-xl font-bold uppercase mb-1 leading-tight text-gray-800")}
-                {renderEditable('schoolName', data.schoolName, "text-3xl font-black uppercase mb-1 tracking-wide leading-none font-serif")}
+              {/* Center Text */}
+              <div className="flex-1 flex flex-col items-center justify-center text-center font-serif tracking-normal text-black w-full overflow-hidden">
+                {renderEditable('province', data.province, "text-lg font-bold uppercase mb-0 leading-tight text-black w-full whitespace-pre-wrap", true)}
+                {renderEditable('agency', data.agency, "text-xl font-bold uppercase mb-1 leading-tight text-black w-full whitespace-pre-wrap", true)}
+                {renderEditable('schoolName', data.schoolName, "text-3xl font-black uppercase mb-1 tracking-wide leading-none font-serif text-black w-full whitespace-pre-wrap", true)}
 
                 {/* Address & Meta */}
                 <div className="w-full px-4">
-                  {renderEditable('address', data.address, "text-sm font-normal normal-case font-serif", true)}
+                  {renderEditable('address', data.address, "text-sm font-normal normal-case font-serif text-black w-full leading-tight", true)}
                 </div>
                 <div className="w-full -mt-1">
-                  {renderEditable('contacts', data.contacts, "text-sm font-normal normal-case font-serif", true)}
+                  {renderEditable('contacts', data.contacts, "text-sm font-normal normal-case font-serif text-black w-full leading-tight", true)}
                 </div>
               </div>
 
