@@ -24,6 +24,7 @@ export default function TrashBinPage() {
   const [data, setData] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
   const [restoring, setRestoring] = useState<string | null>(null)
+  const [deleting, setDeleting] = useState<string | null>(null)
 
   useEffect(() => {
     fetchDeletedItems(activeTab)
@@ -59,6 +60,25 @@ export default function TrashBinPage() {
       toast.error("Gagal mengembalikan item")
     } finally {
       setRestoring(null)
+    }
+  }
+
+  const handlePermanentDelete = async (id: string, type: string) => {
+    if (!confirm("PERHATIAN: Data akan dihapus SELAMANYA dan tidak bisa dikembalikan. Lanjutkan?")) return
+
+    setDeleting(id)
+    try {
+      // NOTE: Only assets implemented in backend for now, need to ensure others work or catch error
+      const endpoint = type === 'procurements' ? `/procurements/${id}/permanent` : `/${type}/${id}/permanent`
+      await api.delete(endpoint)
+      toast.success("Item berhasil dihapus permanen")
+      setData(prev => prev.filter(item => item.id !== id))
+    } catch (error) {
+      // toast.error("Gagal menghapus permanen (Fitur mungkin belum aktif untuk tipe ini)")
+      console.error(error)
+      toast.error("Gagal menghapus item permanen")
+    } finally {
+      setDeleting(null)
     }
   }
 
@@ -118,7 +138,16 @@ export default function TrashBinPage() {
                   disabled={restoring === item.id}
                 >
                   {restoring === item.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArchiveRestore className="h-4 w-4" />}
-                  Pulihkan
+                </Button>
+                <Button
+                  size="sm"
+                  variant="destructive"
+                  className="gap-2"
+                  onClick={() => handlePermanentDelete(item.id, activeTab)}
+                  disabled={deleting === item.id}
+                >
+                  {deleting === item.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                  Hapus Permanen
                 </Button>
               </TableCell>
             </TableRow>

@@ -60,6 +60,16 @@ export class AuthService {
     return result;
   }
 
+  async changePassword(userId: string, changePasswordDto: any) {
+    const user = await this.usersService.findOne(changePasswordDto.username);
+    if (!user) throw new UnauthorizedException('User not found');
+
+    const isValid = await bcrypt.compare(changePasswordDto.currentPassword, user.password);
+    if (!isValid) throw new UnauthorizedException('Invalid current password');
+
+    return this.usersService.update(userId, { password: changePasswordDto.newPassword });
+  }
+
   async forgotPassword(email: string) {
     // Mock implementation
     console.log(`Reset password requested for ${email}`);

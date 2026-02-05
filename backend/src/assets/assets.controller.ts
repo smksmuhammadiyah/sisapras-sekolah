@@ -42,4 +42,9 @@ export class AssetsController {
   remove(@Param('id') id: string) {
     return this.assetsService.remove(id);
   }
+
+  @Delete(':id/permanent')
+  permanentRemove(@Param('id') id: string) {
+    return this.assetsService.permanentRemove(id);
+  }
 }

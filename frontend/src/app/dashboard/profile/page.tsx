@@ -7,7 +7,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { User } from "lucide-react";
+import { User, Loader2 } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
 
 export default function ProfilePage() {
   const { user } = useAuth();
@@ -63,25 +65,13 @@ export default function ProfilePage() {
             <TabsContent value="password">
               <Card>
                 <CardHeader>
-                  <CardTitle>Password</CardTitle>
+                  <CardTitle>Ganti Password</CardTitle>
                   <CardDescription>
-                    Change your password here. (Coming Soon)
+                    Perbarui keamanan akun Anda.
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="current">Current Password</Label>
-                    <Input id="current" type="password" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="new">New Password</Label>
-                    <Input id="new" type="password" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="confirm">Confirm Password</Label>
-                    <Input id="confirm" type="password" />
-                  </div>
-                  <Button disabled>Update Password</Button>
+                <CardContent>
+                  <ChangePasswordForm userId={user.id} username={user.username} />
                 </CardContent>
               </Card>
             </TabsContent>
@@ -89,5 +79,54 @@ export default function ProfilePage() {
         </div>
       </div>
     </div>
+  );
+}
+
+function ChangePasswordForm({ userId, username }: { userId: string, username: string }) {
+  const [loading, setLoading] = useState(false);
+  const { register, handleSubmit, reset } = require('react-hook-form');
+  const [error, setError] = useState('');
+
+  const onSubmit = async (data: any) => {
+    if (data.newPassword !== data.confirmPassword) {
+      toast.error("Konfirmasi password tidak cocok");
+      return;
+    }
+    setLoading(true);
+    try {
+      await require('@/lib/api').default.post('/auth/change-password', {
+        userId,
+        username,
+        currentPassword: data.currentPassword,
+        newPassword: data.newPassword
+      });
+      toast.success("Password berhasil diperbarui");
+      reset();
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Gagal mengganti password");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      <div className="space-y-2">
+        <Label htmlFor="current">Password Saat Ini</Label>
+        <Input id="current" type="password" {...register('currentPassword')} required />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="new">Password Baru</Label>
+        <Input id="new" type="password" {...register('newPassword')} required />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="confirm">Konfirmasi Password</Label>
+        <Input id="confirm" type="password" {...register('confirmPassword')} required />
+      </div>
+      <Button disabled={loading}>
+        {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+        Update Password
+      </Button>
+    </form>
   );
 }

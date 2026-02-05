@@ -84,6 +84,12 @@ export class AssetsService {
     });
   }
 
+  async permanentRemove(id: string) {
+    return this.prisma.asset.delete({
+      where: { id },
+    });
+  }
+
   private async generateCode(category: string, year: number): Promise<string> {
     // Format: SMK/{CATEGORY}/{YEAR}/{SEQ}
     // Example: SMK/ELEC/2026/001
