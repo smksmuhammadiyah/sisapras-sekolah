@@ -60,7 +60,7 @@ export default function StockListPage() {
   };
 
   return (
-    <div className="space-y-6 container mx-auto px-6 py-6 font-sans">
+    <div className="space-y-6 container mx-auto px-4 md:px-6 py-6 font-sans">
       <div className="flex flex-col md:flex-row items-center justify-between gap-4">
         <h1 className="text-3xl font-bold font-heading text-slate-900 dark:text-slate-100">Stok Habis Pakai</h1>
         <div className="flex flex-col md:flex-row items-center gap-2 w-full md:w-auto">
@@ -82,50 +82,52 @@ export default function StockListPage() {
         </div>
       </div>
 
-      <div className="rounded-md border shadow-sm bg-white dark:bg-slate-950">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Nama Barang</TableHead>
-              <TableHead>Satuan</TableHead>
-              <TableHead>Stok Min.</TableHead>
-              <TableHead>Qty Saat Ini</TableHead>
-              <TableHead>Status</TableHead>
-              {isAdminOrStaff && <TableHead className="text-right">Aksi</TableHead>}
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredItems.map((item) => (
-              <TableRow key={item.id}>
-                <TableCell className="font-medium">{item.name}</TableCell>
-                <TableCell>{item.unit}</TableCell>
-                <TableCell>{item.minStock}</TableCell>
-                <TableCell className="font-bold">{item.quantity}</TableCell>
-                <TableCell>
-                  {item.quantity <= item.minStock ? (
-                    <span className="text-destructive font-semibold">Stok Menipis</span>
-                  ) : (
-                    <span className="text-green-600">Aman</span>
-                  )}
-                </TableCell>
-                {isAdminOrStaff && (
-                  <TableCell className="text-right">
-                    <Button variant="ghost" size="icon" className="text-destructive" onClick={() => handleDelete(item.id)}>
-                      <Trash className="h-4 w-4" />
-                    </Button>
-                  </TableCell>
-                )}
-              </TableRow>
-            ))}
-            {filteredItems.length === 0 && (
+      <div className="rounded-md border shadow-sm bg-white dark:bg-slate-950 overflow-hidden">
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
               <TableRow>
-                <TableCell colSpan={isAdminOrStaff ? 6 : 5} className="text-center h-24 text-muted-foreground">
-                  {searchTerm ? 'Tidak ada barang yang cocok.' : 'Belum ada data barang.'}
-                </TableCell>
+                <TableHead>Nama Barang</TableHead>
+                <TableHead>Satuan</TableHead>
+                <TableHead>Stok Min.</TableHead>
+                <TableHead>Qty Saat Ini</TableHead>
+                <TableHead>Status</TableHead>
+                {isAdminOrStaff && <TableHead className="text-right">Aksi</TableHead>}
               </TableRow>
-            )}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {filteredItems.map((item) => (
+                <TableRow key={item.id}>
+                  <TableCell className="font-medium">{item.name}</TableCell>
+                  <TableCell>{item.unit}</TableCell>
+                  <TableCell>{item.minStock}</TableCell>
+                  <TableCell className="font-bold">{item.quantity}</TableCell>
+                  <TableCell>
+                    {item.quantity <= item.minStock ? (
+                      <span className="text-destructive font-semibold">Stok Menipis</span>
+                    ) : (
+                      <span className="text-green-600">Aman</span>
+                    )}
+                  </TableCell>
+                  {isAdminOrStaff && (
+                    <TableCell className="text-right">
+                      <Button variant="ghost" size="icon" className="text-destructive" onClick={() => handleDelete(item.id)}>
+                        <Trash className="h-4 w-4" />
+                      </Button>
+                    </TableCell>
+                  )}
+                </TableRow>
+              ))}
+              {filteredItems.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={isAdminOrStaff ? 6 : 5} className="text-center h-24 text-muted-foreground">
+                    {searchTerm ? 'Tidak ada barang yang cocok.' : 'Belum ada data barang.'}
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </div>
       </div>
     </div>
   );

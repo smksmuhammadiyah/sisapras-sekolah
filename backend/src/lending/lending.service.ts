@@ -5,7 +5,7 @@ import { LendingStatus } from '@prisma/client';
 
 @Injectable()
 export class LendingService {
-  constructor(private prisma: PrismaService) { }
+  constructor(private prisma: PrismaService) {}
 
   async create(createLendingDto: CreateLendingDto) {
     return this.prisma.lending.create({

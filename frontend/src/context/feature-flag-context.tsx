@@ -19,15 +19,23 @@ const defaultFeatures: Features = {
 const FeatureFlagContext = createContext<{ features: Features }>({ features: defaultFeatures });
 
 export function FeatureFlagProvider({ children }: { children: React.ReactNode }) {
-  const [features, setFeatures] = useState<Features>(defaultFeatures);
-
-  useEffect(() => {
-    // In real app, fetch from backend /api/features
-    // For now, allow override via localStorage for testing
-    const local = localStorage.getItem('feature_flags');
-    if (local) {
-      setFeatures({ ...defaultFeatures, ...JSON.parse(local) });
+  const [features] = useState<Features>(() => {
+    if (typeof window !== 'undefined') {
+      const local = localStorage.getItem('feature_flags');
+      if (local) {
+        try {
+          return { ...defaultFeatures, ...JSON.parse(local) };
+        } catch (e) {
+          return defaultFeatures;
+        }
+      }
     }
+    return defaultFeatures;
+  });
+
+  // No longer need effect for initial load from local
+  useEffect(() => {
+    // This effect could be used for syncing if needed, but currently empty to avoid the warning
   }, []);
 
   return (

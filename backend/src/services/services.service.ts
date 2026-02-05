@@ -7,8 +7,8 @@ import { CreateServiceDto } from './dto/create-service.dto';
 export class ServicesService {
   constructor(
     private prisma: PrismaService,
-    private yearsService: YearsService
-  ) { }
+    private yearsService: YearsService,
+  ) {}
 
   async create(reportedById: string, createServiceDto: CreateServiceDto) {
     const activeYear = await this.yearsService.getActiveYear();

@@ -26,7 +26,7 @@ export default function RootLayout({
             <NetworkStatus />
             {children}
           </FeatureFlagProvider>
-          <Toaster />
+          <Toaster position="top-center" toastOptions={{ className: 'z-[9999]' }} />
         </AuthProvider>
       </body>
     </html>

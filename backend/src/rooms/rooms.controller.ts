@@ -1,4 +1,13 @@
-import { Controller, Get, Post, Body, Param, UseGuards, Delete, Patch } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  UseGuards,
+  Delete,
+  Patch,
+} from '@nestjs/common';
 import { RoomsService } from './rooms.service';
 import { CreateRoomDto } from './dto/create-room.dto';
 import { AuthGuard } from '@nestjs/passport';
@@ -6,7 +15,7 @@ import { AuthGuard } from '@nestjs/passport';
 @Controller('rooms')
 @UseGuards(AuthGuard('jwt'))
 export class RoomsController {
-  constructor(private readonly roomsService: RoomsService) { }
+  constructor(private readonly roomsService: RoomsService) {}
 
   @Post()
   create(@Body() createRoomDto: CreateRoomDto) {

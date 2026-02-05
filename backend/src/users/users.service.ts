@@ -1,11 +1,11 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { Prisma, User } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UsersService {
-  constructor(private prisma: PrismaService) { }
+  constructor(private prisma: PrismaService) {}
 
   async findOne(username: string): Promise<User | null> {
     return this.prisma.user.findUnique({
@@ -47,13 +47,35 @@ export class UsersService {
       const salt = await bcrypt.genSalt();
       data.password = await bcrypt.hash(data.password, salt);
     }
-    return this.prisma.user.update({
-      where: { id },
-      data,
-    });
+    console.log(`Prisma updating user ID: ${id} with data:`, data);
+    try {
+      const updated = await this.prisma.user.update({
+        where: { id },
+        data,
+      });
+      console.log('Prisma Update Result:', updated);
+      return updated;
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error('Prisma Update Error:', error.message);
+      }
+
+      const errCode = (error as { code?: string })?.code;
+      if (errCode) console.error('Error Code:', errCode);
+
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        if (error.code === 'P2002') {
+          throw new BadRequestException('Email already exists');
+        }
+        if (error.code === 'P2025') {
+          throw new BadRequestException('User not found or update failed');
+        }
+      }
+      throw error;
+    }
   }
 
-  async remove(id: string): Promise<User> {
+  async remove(id: string): Promise<any> {
     // 1. Check for dependencies
     const user = await this.prisma.user.findUnique({
       where: { id },
@@ -65,13 +87,13 @@ export class UsersService {
             stockTransactions: true,
             lendings: true,
             reportedServices: true,
-          }
-        }
-      }
+          },
+        },
+      },
     });
 
     if (!user) {
-      throw new Error("User not found");
+      throw new BadRequestException('User not found');
     }
 
     const hasHistory =
@@ -82,10 +104,20 @@ export class UsersService {
       user._count.reportedServices > 0;
 
     if (hasHistory) {
-      throw new Error("Cannot delete user with activity history (Procurement, Audit, Stock, etc.)");
+      // Perform Deactivation (Anonymize email/username and set isActive: false)
+      const timestamp = Date.now();
+      return this.prisma.user.update({
+        where: { id },
+        data: {
+          isActive: false,
+          isApproved: false,
+          email: `deleted_${timestamp}_${user.email || 'noemail'}`,
+          username: `deleted_${timestamp}_${user.username}`,
+        },
+      });
     }
 
-    // 2. Hard Delete
+    // 2. Hard Delete (only if no history)
     return this.prisma.user.delete({
       where: { id },
     });

@@ -6,7 +6,7 @@ import { PrismaService } from '../prisma/prisma.service';
 export class CleanupService {
   private readonly logger = new Logger(CleanupService.name);
 
-  constructor(private readonly prisma: PrismaService) { }
+  constructor(private readonly prisma: PrismaService) {}
 
   @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
   async handleCleanup() {
@@ -35,10 +35,12 @@ export class CleanupService {
       where: {
         deletedAt: {
           lt: threeDaysAgo,
-        }
-      }
+        },
+      },
     });
 
-    this.logger.log(`Cleanup complete. Deleted Assets: ${deletedAssets.count}, Rooms: ${deletedRooms.count}, Procurements: ${deletedProcurements.count}`);
+    this.logger.log(
+      `Cleanup complete. Deleted Assets: ${deletedAssets.count}, Rooms: ${deletedRooms.count}, Procurements: ${deletedProcurements.count}`,
+    );
   }
 }

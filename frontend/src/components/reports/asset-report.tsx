@@ -24,7 +24,7 @@ export function AssetReportButton() {
     agency: "MAJELIS PENDIDIKAN DASAR DAN MENENGAH",
     schoolName: "SMKS MUHAMMADIYAH SATUI",
     address: "Jl. KH. Ahmad Dahlan, No.07 Ds. Makmur Jaya, Kec. Satui, Kab. Tanah Bumbu (72275)",
-    contacts: "NSPN : 69772942 NISS : 32215511 03 007 Telp: 081254721126/08525104559 - Email:smk.muhammadiyahsatui@gmail.com"
+    contacts: "NSPN : 69772942 NISS : 32215511 03 007 Telp: ... | Email: ..."
   });
   const [signatures, setSignatures] = useState<SignatureData[]>([
     { role: "Kepala Sekolah", name: "Loading...", nip: "..." },

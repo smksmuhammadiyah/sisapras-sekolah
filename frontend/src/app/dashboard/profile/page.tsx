@@ -10,6 +10,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { User, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { useForm } from "react-hook-form";
+import api from "@/lib/api";
 
 export default function ProfilePage() {
   const { user } = useAuth();
@@ -51,19 +53,7 @@ export default function ProfilePage() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="username">Username</Label>
-                    <Input id="username" defaultValue={user?.username} disabled />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
-                    <Input id="email" defaultValue={user?.email || '-'} disabled />
-                    <p className="text-[10px] text-muted-foreground italic">Email digunakan untuk reset password dan notifikasi.</p>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="role">Role</Label>
-                    <Input id="role" defaultValue={user?.role} disabled />
-                  </div>
+                  {user ? <AccountForm user={user} /> : <div>Loading...</div>}
                 </CardContent>
               </Card>
             </TabsContent>
@@ -91,10 +81,11 @@ export default function ProfilePage() {
   );
 }
 
+
+
 function ChangePasswordForm({ userId, username }: { userId: string, username: string }) {
   const [loading, setLoading] = useState(false);
-  const { register, handleSubmit, reset } = require('react-hook-form');
-  const [error, setError] = useState('');
+  const { register, handleSubmit, reset } = useForm();
 
   const onSubmit = async (data: any) => {
     if (data.newPassword !== data.confirmPassword) {
@@ -103,7 +94,7 @@ function ChangePasswordForm({ userId, username }: { userId: string, username: st
     }
     setLoading(true);
     try {
-      await require('@/lib/api').default.post('/auth/change-password', {
+      await api.post('/auth/change-password', {
         userId,
         username,
         currentPassword: data.currentPassword,
@@ -122,19 +113,60 @@ function ChangePasswordForm({ userId, username }: { userId: string, username: st
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       <div className="space-y-2">
         <Label htmlFor="current">Password Saat Ini</Label>
-        <Input id="current" type="password" {...register('currentPassword')} required />
+        <Input id="current" type="password" {...register('currentPassword', { required: true })} />
       </div>
       <div className="space-y-2">
         <Label htmlFor="new">Password Baru</Label>
-        <Input id="new" type="password" {...register('newPassword')} required />
+        <Input id="new" type="password" {...register('newPassword', { required: true })} />
       </div>
       <div className="space-y-2">
         <Label htmlFor="confirm">Konfirmasi Password</Label>
-        <Input id="confirm" type="password" {...register('confirmPassword')} required />
+        <Input id="confirm" type="password" {...register('confirmPassword', { required: true })} />
       </div>
       <Button disabled={loading}>
         {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
         Update Password
+      </Button>
+    </form>
+  );
+}
+
+function AccountForm({ user }: { user: any }) {
+  const [loading, setLoading] = useState(false);
+  const { updateUser } = useAuth();
+  const { register, handleSubmit } = useForm();
+
+  const onSubmit = async (data: any) => {
+    setLoading(true);
+    try {
+      const response = await api.patch('/users/profile', { email: data.email });
+      updateUser({ email: response.data.email });
+      toast.success("Profil berhasil diperbarui");
+    } catch (err: any) {
+      toast.error("Gagal memperbarui profil");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      <div className="space-y-2">
+        <Label htmlFor="username">Username</Label>
+        <Input id="username" defaultValue={user?.username} disabled />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="email">Email</Label>
+        <Input id="email" defaultValue={user?.email} {...register('email')} />
+        <p className="text-[10px] text-muted-foreground italic">Email digunakan untuk reset password dan notifikasi.</p>
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="role">Role</Label>
+        <Input id="role" defaultValue={user?.role} disabled />
+      </div>
+      <Button disabled={loading}>
+        {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+        Simpan Perubahan
       </Button>
     </form>
   );

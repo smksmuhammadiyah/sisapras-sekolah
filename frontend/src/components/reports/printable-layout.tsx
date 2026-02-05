@@ -116,75 +116,89 @@ export const PrintableLayout = forwardRef<HTMLDivElement, PrintableLayoutProps>(
     };
 
     return (
-      <div className="w-full bg-slate-100 print:bg-white p-4 print:p-0 overflow-auto flex justify-center items-start">
-        {/* Paper Container - Visualized as A4 in Preview */}
-        {/* We use a transform scale for smaller screens to ensure the A4 sheet is visible without too much scrolling */}
-        <div ref={ref} className="bg-white text-black shadow-lg print:shadow-none p-[10mm] md:p-[15mm] w-full md:max-w-[210mm] print:w-full print:min-h-0 mx-auto box-border flex flex-col mb-10 print:m-0 print:mb-0">
+      <div ref={ref} className="w-full bg-slate-100 print:bg-white p-4 print:p-0 overflow-auto flex justify-center items-start">
+        {/* Paper Container - Visualized as A4 Landscape in Preview */}
+        <div
+          id="print-area"
+          className="bg-white text-black shadow-lg print:shadow-none p-[10mm] md:p-[15mm] min-w-[297mm] min-h-[210mm] print:w-full print:min-h-0 mx-auto box-border flex flex-col mb-10 print:m-0 print:mb-0"
+        >
           <style type="text/css" media="print">
             {`
-              @page { 
-                size: A4 portrait; 
-                margin: 10mm; 
-              }
-              body { 
-                -webkit-print-color-adjust: exact; 
-                print-color-adjust: exact;
-              }
-              table { 
-                width: 100%; 
-                border-collapse: collapse; 
-                font-size: 11px;
-              }
-              thead { 
-                display: table-header-group; 
-              }
-              tfoot {
-                display: table-footer-group;
-              }
-              tr { 
-                page-break-inside: avoid; 
-              }
-              td, th {
-                padding: 4px 6px;
-                word-wrap: break-word;
-                overflow-wrap: break-word;
-              }
-              input, textarea { 
-                border: none !important; 
-                background: transparent !important; 
-                padding: 0 !important; 
-              }
-              .no-print { 
-                display: none !important; 
-              }
-              /* Ensure signatures don't break across pages */
-              .break-inside-avoid {
-                break-inside: avoid;
-                page-break-inside: avoid;
-              }
-              /* Force page break before signatures if needed */
-              .signature-section {
-                break-before: avoid;
-              }
-            `}
+                @page { 
+                  size: A4 landscape; 
+                  margin: 10mm; 
+                }
+                body * {
+                  visibility: hidden;
+                }
+                #print-area, #print-area * {
+                  visibility: visible;
+                }
+                #print-area {
+                  position: absolute;
+                  left: 0;
+                  top: 0;
+                  width: 100%;
+                  margin: 0;
+                  padding: 10mm;
+                }
+                body { 
+                  -webkit-print-color-adjust: exact; 
+                  print-color-adjust: exact;
+                  background: white !important;
+                }
+                table { 
+                  width: 100%; 
+                  border-collapse: collapse; 
+                  font-size: 10px;
+                }
+                thead { 
+                  display: table-header-group; 
+                }
+                tfoot {
+                  display: table-footer-group;
+                }
+                tr { 
+                  page-break-inside: avoid; 
+                }
+                td, th {
+                  padding: 4px 6px;
+                  word-wrap: break-word;
+                  overflow-wrap: break-word;
+                }
+                input, textarea { 
+                  border: none !important; 
+                  background: transparent !important; 
+                  padding: 0 !important; 
+                  width: 100%;
+                  text-align: inherit;
+                }
+                .no-print { 
+                  display: none !important; 
+                }
+                .break-inside-avoid {
+                  break-inside: avoid;
+                  page-break-inside: avoid;
+                }
+              `}
           </style>
 
           {/* KOP SURAT */}
           <div className="border-b-4 border-double border-black pb-2 mb-6 relative">
-            {/* 3-Column Layout: Logo Left - Text Center - Logo Right */}
-            <div className="flex items-center justify-between px-4 gap-4">
+            {/* 3-Column Grid Layout for Precise Alignment */}
+            <div className="grid grid-cols-[100px_1fr_100px] items-center gap-4 px-4">
 
               {/* Left Logo */}
-              {renderLogo('left', data.logoLeft)}
+              <div className="flex justify-center">
+                {renderLogo('left', data.logoLeft)}
+              </div>
 
               {/* Center Text */}
-              {/* Center Text */}
-              <div className="flex-1 flex flex-col items-center justify-center text-center font-serif tracking-normal text-black w-full overflow-hidden">
+              <div className="flex flex-col items-center justify-center text-center font-serif tracking-normal text-black w-full overflow-hidden">
                 {renderEditable('province', data.province, "text-lg font-bold uppercase mb-0 leading-tight text-black w-full whitespace-pre-wrap", true)}
                 {renderEditable('agency', data.agency, "text-xl font-bold uppercase mb-1 leading-tight text-black w-full whitespace-pre-wrap", true)}
                 {renderEditable('schoolName', data.schoolName, "text-3xl font-black uppercase mb-1 tracking-wide leading-none font-serif text-black w-full whitespace-pre-wrap", true)}
 
-                {/* Address & Meta */}
                 <div className="w-full px-4">
                   {renderEditable('address', data.address, "text-sm font-normal normal-case font-serif text-black w-full leading-tight", true)}
                 </div>
@@ -194,11 +208,12 @@ export const PrintableLayout = forwardRef<HTMLDivElement, PrintableLayoutProps>(
               </div>
 
               {/* Right Logo */}
-              {renderLogo('right', data.logoRight)}
+              <div className="flex justify-center">
+                {renderLogo('right', data.logoRight)}
+              </div>
 
             </div>
 
-            {/* Double Line Border Bottom */}
             <div className="absolute bottom-0 left-0 right-0 h-1 bg-black"></div>
             <div className="absolute bottom-[6px] left-0 right-0 h-[1px] bg-black"></div>
           </div>
@@ -211,46 +226,43 @@ export const PrintableLayout = forwardRef<HTMLDivElement, PrintableLayoutProps>(
           </div>
 
           {/* MAIN CONTENT TABLE */}
-          <div className="flex-1 mb-8 w-full">
+          <div className="flex-1 mb-8 w-full overflow-hidden">
             {children}
           </div>
 
           {/* SIGNATURE BLOCK */}
           <div className="mt-8 flex justify-between px-8 text-center break-inside-avoid">
             {signatures.map((sig, idx) => (
-              <div key={idx} className="flex flex-col items-center min-w-[200px]">
-                {/* Date Placeholder: Only content on Right side (index 1), but occupies space on Left to align Roles */}
-                <div className="h-6 mb-1 w-full">
+              <div key={idx} className="flex flex-col items-center min-w-[200px] max-w-[300px]">
+                <div className="h-6 mb-1 w-full flex justify-center items-center">
                   {idx === signatures.length - 1 ? (
-                    <p className="text-sm">
-                      Bandung, {new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
+                    <p className="text-sm whitespace-nowrap">
+                      Satui, {new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
                     </p>
                   ) : (
-                    <div className="w-full h-full"></div> /* Phantom spacer for alignment */
+                    <div className="w-full h-full"></div>
                   )}
                 </div>
 
-                {/* Editable Role */}
                 <input
                   value={sig.role}
                   onChange={(e) => onSignatureChange?.(idx, 'role', e.target.value)}
-                  className="font-semibold mb-20 text-center bg-transparent outline-none hover:bg-gray-50 focus:bg-gray-100 rounded w-full"
+                  className="font-semibold mb-20 text-center bg-transparent outline-none hover:bg-gray-50 focus:bg-gray-100 rounded w-full break-words"
                 />
 
-                {/* Editable Name */}
-                <input
+                <textarea
                   value={sig.name}
                   onChange={(e) => onSignatureChange?.(idx, 'name', e.target.value)}
-                  className="font-bold underline text-center bg-transparent outline-none hover:bg-gray-50 focus:bg-gray-100 rounded w-full"
+                  className="font-bold underline text-center bg-transparent outline-none hover:bg-gray-50 focus:bg-gray-100 rounded w-full break-words whitespace-normal resize-none overflow-hidden"
+                  rows={2}
                 />
 
-                {/* Editable NIP */}
                 <div className="flex items-center justify-center gap-1 w-full text-sm">
-                  <span>NIP.</span>
+                  <span className="shrink-0">NIP.</span>
                   <input
                     value={sig.nip}
                     onChange={(e) => onSignatureChange?.(idx, 'nip', e.target.value)}
-                    className="bg-transparent outline-none hover:bg-gray-50 focus:bg-gray-100 rounded min-w-[100px]"
+                    className="bg-transparent outline-none hover:bg-gray-50 focus:bg-gray-100 rounded w-full"
                   />
                 </div>
               </div>

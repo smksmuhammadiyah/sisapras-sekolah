@@ -18,10 +18,35 @@ import { HealthModule } from './health/health.module';
 import { CleanupModule } from './cron/cleanup.module';
 import { MailModule } from './mail/mail.module';
 import { LendingModule } from './lending/lending.module';
+import { ThrottlerModule } from '@nestjs/throttler';
 
 @Module({
-  imports: [PrismaModule, AuthModule, UsersModule, AssetsModule, RoomsModule, AuditModule, ServicesModule, StockModule, ProcurementModule, NotificationsModule, AnalyticsModule, SettingsModule, YearsModule, HealthModule, CleanupModule, MailModule, LendingModule],
+  imports: [
+    PrismaModule,
+    AuthModule,
+    UsersModule,
+    AssetsModule,
+    RoomsModule,
+    AuditModule,
+    ServicesModule,
+    StockModule,
+    ProcurementModule,
+    NotificationsModule,
+    AnalyticsModule,
+    SettingsModule,
+    YearsModule,
+    HealthModule,
+    CleanupModule,
+    MailModule,
+    LendingModule,
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60000,
+        limit: 100,
+      },
+    ]),
+  ],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule { }
+export class AppModule {}

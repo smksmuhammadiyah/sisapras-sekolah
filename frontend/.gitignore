@@ -34,3 +34,14 @@ next-env.d.ts
 
 # TestSprite
 testsprite_tests/
+
+# Custom Ignores
+.env
+.env.*
+Context.md
+fitur-tambahan.md
+GMAIL_SETUP.md
+Landingpage.md
+RENDER_GUIDE.md
+brief*.jpeg
+docker-compose.yml

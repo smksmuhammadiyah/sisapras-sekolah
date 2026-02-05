@@ -31,11 +31,11 @@ export function ProcurementReportButton() {
 
   // Header & Sig State
   const [headerData, setHeaderData] = useState<ReportHeaderData>({
-    province: "PEMERINTAH PROVINSI JAWA BARAT",
-    agency: "DINAS PENDIDIKAN",
-    schoolName: "Loading...",
-    address: "Loading...",
-    contacts: "Loading..."
+    province: "PIMPINAN CABANG MUHAMMADIYAH SATUI",
+    agency: "MAJELIS PENDIDIKAN DASAR DAN MENENGAH",
+    schoolName: "SMKS MUHAMMADIYAH SATUI",
+    address: "Jl. KH. Ahmad Dahlan, No.07 Ds. Makmur Jaya, Kec. Satui, Kab. Tanah Bumbu (72275)",
+    contacts: "NSPN : 69772942 NISS : 32215511 03 007 Telp: ... | Email: ..."
   });
 
   const [signatures, setSignatures] = useState<SignatureData[]>([

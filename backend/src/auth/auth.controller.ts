@@ -5,7 +5,7 @@ import { RegisterDto } from './dto/register.dto';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private authService: AuthService) { }
+  constructor(private authService: AuthService) {}
 
   @HttpCode(HttpStatus.OK)
   @Post('login')
@@ -33,4 +33,3 @@ export class AuthController {
     return this.authService.changePassword(body.userId, body);
   }
 }
-

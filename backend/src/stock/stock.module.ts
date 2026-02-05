@@ -9,4 +9,4 @@ import { YearsModule } from '../years/years.module';
   providers: [StockService],
   controllers: [StockController],
 })
-export class StockModule { }
+export class StockModule {}

@@ -1,4 +1,13 @@
-import { Controller, Get, Post, Body, Param, UseGuards, Delete, Patch } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  UseGuards,
+  Delete,
+  Patch,
+} from '@nestjs/common';
 import { AssetsService } from './assets.service';
 import { CreateAssetDto } from './dto/create-asset.dto';
 import { AuthGuard } from '@nestjs/passport';
@@ -6,7 +15,7 @@ import { AuthGuard } from '@nestjs/passport';
 @Controller('assets')
 @UseGuards(AuthGuard('jwt'))
 export class AssetsController {
-  constructor(private readonly assetsService: AssetsService) { }
+  constructor(private readonly assetsService: AssetsService) {}
 
   @Post()
   create(@Body() createAssetDto: CreateAssetDto) {

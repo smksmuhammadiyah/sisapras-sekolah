@@ -8,4 +8,4 @@ import { PrismaModule } from '../prisma/prisma.module';
   controllers: [LendingController],
   providers: [LendingService],
 })
-export class LendingModule { }
+export class LendingModule {}

@@ -34,3 +34,12 @@ tsconfig.build.tsbuildinfo
 testsprite_tests/
 scripts/
 server.log
+
+# Custom Ignores
+Context.md
+fitur-tambahan.md
+GMAIL_SETUP.md
+Landingpage.md
+RENDER_GUIDE.md
+brief*.jpeg
+docker-compose.yml

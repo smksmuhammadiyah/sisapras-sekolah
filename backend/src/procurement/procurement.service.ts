@@ -11,8 +11,8 @@ export class ProcurementService {
   constructor(
     private prisma: PrismaService,
     private yearsService: YearsService,
-    private mailService: MailService
-  ) { }
+    private mailService: MailService,
+  ) {}
 
   async create(requesterId: string, dto: CreateProcurementDto) {
     const activeYear = await this.yearsService.getActiveYear();
@@ -89,7 +89,9 @@ export class ProcurementService {
   }
 
   async approve(id: string, userRole: Role) {
-    const procurement = await this.prisma.procurement.findUnique({ where: { id } });
+    const procurement = await this.prisma.procurement.findUnique({
+      where: { id },
+    });
     if (!procurement) throw new BadRequestException('Procurement not found');
 
     let nextStatus: ProcurementStatus = ProcurementStatus.APPROVED;
@@ -112,7 +114,11 @@ export class ProcurementService {
     });
 
     if (updated.requester?.email) {
-      this.mailService.sendProcurementNotification(updated.requester.email, updated.title, updated.status);
+      this.mailService.sendProcurementNotification(
+        updated.requester.email,
+        updated.title,
+        updated.status,
+      );
     }
 
     return updated;
@@ -122,11 +128,16 @@ export class ProcurementService {
     const updated = await this.prisma.procurement.update({
       where: { id },
       data: { status: ProcurementStatus.REJECTED, rejectionReason: reason },
-      include: { requester: true }
+      include: { requester: true },
     });
 
     if (updated.requester?.email) {
-      this.mailService.sendProcurementNotification(updated.requester.email, updated.title, updated.status, reason);
+      this.mailService.sendProcurementNotification(
+        updated.requester.email,
+        updated.title,
+        updated.status,
+        reason,
+      );
     }
 
     return updated;

@@ -77,7 +77,7 @@ export default function RoomListPage() {
   };
 
   return (
-    <div className="space-y-6 container mx-auto px-6 py-6 font-sans">
+    <div className="space-y-6 container mx-auto px-4 md:px-6 py-6 font-sans">
       <div className="flex flex-col md:flex-row items-center justify-between gap-4">
         <h1 className="text-3xl font-bold font-heading text-slate-900 dark:text-slate-100">Data Ruangan</h1>
         <div className="flex items-center gap-2 w-full md:w-auto">
@@ -91,50 +91,52 @@ export default function RoomListPage() {
         </div>
       </div>
 
-      <div className="rounded-md border shadow-sm bg-white dark:bg-slate-950">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Nama Ruangan</TableHead>
-              <TableHead>Tipe</TableHead>
-              <TableHead>Lokasi</TableHead>
-              <TableHead className="text-right">Aksi</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredRooms.map((room) => (
-              <TableRow key={room.id}>
-                <TableCell className="font-medium">{room.name}</TableCell>
-                <TableCell>{room.type}</TableCell>
-                <TableCell>{room.location}</TableCell>
-                <TableCell className="text-right">
-                  <div className="flex justify-end gap-2">
-                    <Button variant="ghost" size="icon" asChild>
-                      <Link href={`/dashboard/rooms/${room.id}`}>
-                        <Eye className="h-4 w-4" />
-                      </Link>
-                    </Button>
-                    <Button variant="ghost" size="icon" asChild>
-                      <Link href={`/dashboard/rooms/${room.id}/edit`}>
-                        <Edit className="h-4 w-4" />
-                      </Link>
-                    </Button>
-                    <Button variant="ghost" size="icon" className="text-destructive" onClick={() => handleDelete(room.id)}>
-                      <Trash className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
-            {filteredRooms.length === 0 && (
+      <div className="rounded-md border shadow-sm bg-white dark:bg-slate-950 overflow-hidden">
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
               <TableRow>
-                <TableCell colSpan={4} className="text-center h-24 text-muted-foreground">
-                  {searchTerm ? 'Tidak ada ruangan yang cocok.' : 'Belum ada data ruangan.'}
-                </TableCell>
+                <TableHead>Nama Ruangan</TableHead>
+                <TableHead>Tipe</TableHead>
+                <TableHead>Lokasi</TableHead>
+                <TableHead className="text-right">Aksi</TableHead>
               </TableRow>
-            )}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {filteredRooms.map((room) => (
+                <TableRow key={room.id}>
+                  <TableCell className="font-medium">{room.name}</TableCell>
+                  <TableCell>{room.type}</TableCell>
+                  <TableCell>{room.location}</TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex justify-end gap-2">
+                      <Button variant="ghost" size="icon" asChild>
+                        <Link href={`/dashboard/rooms/${room.id}`}>
+                          <Eye className="h-4 w-4" />
+                        </Link>
+                      </Button>
+                      <Button variant="ghost" size="icon" asChild>
+                        <Link href={`/dashboard/rooms/${room.id}/edit`}>
+                          <Edit className="h-4 w-4" />
+                        </Link>
+                      </Button>
+                      <Button variant="ghost" size="icon" className="text-destructive" onClick={() => handleDelete(room.id)}>
+                        <Trash className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+              {filteredRooms.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={4} className="text-center h-24 text-muted-foreground">
+                    {searchTerm ? 'Tidak ada ruangan yang cocok.' : 'Belum ada data ruangan.'}
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </div>
       </div>
     </div>
   );

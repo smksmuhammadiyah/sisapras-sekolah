@@ -1,4 +1,9 @@
-import { Injectable, UnauthorizedException, BadRequestException, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  UnauthorizedException,
+  BadRequestException,
+  ConflictException,
+} from '@nestjs/common';
 import { UsersService } from '../users/users.service';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../prisma/prisma.service';
@@ -14,7 +19,7 @@ export class AuthService {
     private jwtService: JwtService,
     private mailService: MailService,
     private prisma: PrismaService,
-  ) { }
+  ) {}
 
   async validateUser(username: string, pass: string): Promise<any> {
     const user = await this.usersService.findOne(username);
@@ -46,7 +51,7 @@ export class AuthService {
         role: user.role,
         roles: [user.role],
         email: user.email,
-      }
+      },
     };
   }
 
@@ -68,10 +73,15 @@ export class AuthService {
     const user = await this.usersService.findById(userId);
     if (!user) throw new UnauthorizedException('User not found');
 
-    const isValid = await bcrypt.compare(changePasswordDto.currentPassword, user.password);
+    const isValid = await bcrypt.compare(
+      changePasswordDto.currentPassword,
+      user.password,
+    );
     if (!isValid) throw new UnauthorizedException('Invalid current password');
 
-    return this.usersService.update(userId, { password: changePasswordDto.newPassword });
+    return this.usersService.update(userId, {
+      password: changePasswordDto.newPassword,
+    });
   }
 
   async forgotPassword(email: string) {
@@ -84,7 +94,9 @@ export class AuthService {
 
     // Always return success message (security: don't reveal if email exists)
     if (!user) {
-      return { message: 'Jika email terdaftar, link reset password akan dikirim' };
+      return {
+        message: 'Jika email terdaftar, link reset password akan dikirim',
+      };
     }
 
     // Generate token
@@ -97,7 +109,7 @@ export class AuthService {
         email,
         token,
         expiresAt,
-      }
+      },
     });
 
     // Send email with user details
@@ -107,7 +119,9 @@ export class AuthService {
       console.error('Failed to send email:', e);
     }
 
-    return { message: 'Jika email terdaftar, link reset password akan dikirim' };
+    return {
+      message: 'Jika email terdaftar, link reset password akan dikirim',
+    };
   }
 
   async resetPassword(token: string, newPassword: string) {
@@ -118,7 +132,9 @@ export class AuthService {
     // Validate password complexity
     const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
     if (!passwordRegex.test(newPassword)) {
-      throw new BadRequestException('Password harus minimal 8 karakter, mengandung huruf dan angka.');
+      throw new BadRequestException(
+        'Password harus minimal 8 karakter, mengandung huruf dan angka.',
+      );
     }
 
     // Find valid token
@@ -126,8 +142,8 @@ export class AuthService {
       where: {
         token,
         used: false,
-        expiresAt: { gt: new Date() }
-      }
+        expiresAt: { gt: new Date() },
+      },
     });
 
     if (!resetRecord) {
@@ -135,7 +151,9 @@ export class AuthService {
     }
 
     // Find user
-    const user = await this.prisma.user.findFirst({ where: { email: resetRecord.email } });
+    const user = await this.prisma.user.findFirst({
+      where: { email: resetRecord.email },
+    });
     if (!user) {
       throw new BadRequestException('User tidak ditemukan');
     }
@@ -143,7 +161,9 @@ export class AuthService {
     // Check if new password is same as old password
     const isSamePassword = await bcrypt.compare(newPassword, user.password);
     if (isSamePassword) {
-      throw new BadRequestException('Password baru tidak boleh sama dengan password lama.');
+      throw new BadRequestException(
+        'Password baru tidak boleh sama dengan password lama.',
+      );
     }
 
     // Hash new password
@@ -152,16 +172,17 @@ export class AuthService {
     // Update password
     await this.prisma.user.update({
       where: { id: user.id },
-      data: { password: hashedPassword }
+      data: { password: hashedPassword },
     });
 
     // Mark token as used
     await this.prisma.passwordReset.update({
       where: { id: resetRecord.id },
-      data: { used: true }
+      data: { used: true },
     });
 
-    return { message: 'Password berhasil direset. Silakan login dengan password baru.' };
+    return {
+      message: 'Password berhasil direset. Silakan login dengan password baru.',
+    };
   }
 }
-

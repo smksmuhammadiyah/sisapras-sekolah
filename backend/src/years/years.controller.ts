@@ -1,4 +1,12 @@
-import { Controller, Get, Post, Patch, Body, Param, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Body,
+  Param,
+  UseGuards,
+} from '@nestjs/common';
 import { YearsService } from './years.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
@@ -7,7 +15,7 @@ import { Role } from '@prisma/client';
 
 @Controller('years')
 export class YearsController {
-  constructor(private readonly yearsService: YearsService) { }
+  constructor(private readonly yearsService: YearsService) {}
 
   @Get()
   findAll() {

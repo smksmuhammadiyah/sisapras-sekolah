@@ -4,7 +4,7 @@ import { AssetCondition, ProcurementStatus } from '@prisma/client';
 
 @Injectable()
 export class AnalyticsService {
-  constructor(private prisma: PrismaService) { }
+  constructor(private prisma: PrismaService) {}
 
   async getDashboardStats() {
     // 1. Asset Conditions (Good, Broken Light, Broken Heavy)
@@ -47,47 +47,55 @@ export class AnalyticsService {
 
     return {
       totalAssets,
-      assetConditions: assetsByCondition.map(item => ({
+      assetConditions: assetsByCondition.map((item) => ({
         name: item.condition,
         value: item._count.condition,
       })),
-      lowStockItems: lowStockItems.map(item => ({
+      lowStockItems: lowStockItems.map((item) => ({
         name: item.name,
         quantity: item.quantity,
-        limit: item.minStock
+        limit: item.minStock,
       })),
-      procurementStats: procurementStats.map(item => ({
+      procurementStats: procurementStats.map((item) => ({
         name: item.status,
-        value: item._count.status
-      }))
+        value: item._count.status,
+      })),
     };
   }
 
   async getUserStats(userId: string) {
     const [myProposals, approvedProposals, stockAgg] = await Promise.all([
-      this.prisma.procurement.count({ where: { requesterId: userId, deletedAt: null } }),
-      this.prisma.procurement.count({ where: { requesterId: userId, status: 'APPROVED', deletedAt: null } }),
-      this.prisma.stockItem.aggregate({ _sum: { quantity: true } })
+      this.prisma.procurement.count({
+        where: { requesterId: userId, deletedAt: null },
+      }),
+      this.prisma.procurement.count({
+        where: { requesterId: userId, status: 'APPROVED', deletedAt: null },
+      }),
+      this.prisma.stockItem.aggregate({ _sum: { quantity: true } }),
     ]);
 
     return {
       myProposals,
       approvedProposals,
-      itemsInStock: stockAgg._sum.quantity || 0
+      itemsInStock: stockAgg._sum.quantity || 0,
     };
   }
 
   async getStaffStats() {
     const [pendingAudits, brokenAssets, upcomingServices] = await Promise.all([
       this.prisma.audit.count({ where: { status: 'DRAFT' } }),
-      this.prisma.asset.count({ where: { OR: [{ condition: 'BROKEN_LIGHT' }, { condition: 'BROKEN_HEAVY' }] } }),
-      this.prisma.service.count({ where: { date: { gte: new Date() } } })
+      this.prisma.asset.count({
+        where: {
+          OR: [{ condition: 'BROKEN_LIGHT' }, { condition: 'BROKEN_HEAVY' }],
+        },
+      }),
+      this.prisma.service.count({ where: { date: { gte: new Date() } } }),
     ]);
 
     return {
       pendingAudits,
       brokenAssets,
-      upcomingServices
+      upcomingServices,
     };
   }
 }

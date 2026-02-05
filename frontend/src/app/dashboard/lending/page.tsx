@@ -137,7 +137,7 @@ export default function LendingPage() {
   };
 
   return (
-    <div className="space-y-6 container mx-auto px-6 py-6">
+    <div className="space-y-6 container mx-auto px-4 md:px-6 py-6">
       <div className="flex flex-col md:flex-row items-center justify-between gap-4">
         <h1 className="text-3xl font-bold font-heading">Daftar Peminjaman Barang</h1>
         <Button onClick={() => setIsBorrowDialogOpen(true)}>

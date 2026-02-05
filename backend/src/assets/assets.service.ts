@@ -5,56 +5,87 @@ import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class AssetsService {
-  constructor(private prisma: PrismaService) { }
+  constructor(private prisma: PrismaService) {}
 
   async create(createAssetDto: CreateAssetDto) {
-    const purchaseDate = createAssetDto.purchaseDate ? new Date(createAssetDto.purchaseDate) : new Date();
-    const purchaseYear = isNaN(purchaseDate.getFullYear()) ? new Date().getFullYear() : purchaseDate.getFullYear();
+    const purchaseDate = createAssetDto.purchaseDate
+      ? new Date(createAssetDto.purchaseDate)
+      : new Date();
+    const purchaseYear = isNaN(purchaseDate.getFullYear())
+      ? new Date().getFullYear()
+      : purchaseDate.getFullYear();
     const categoryName = createAssetDto.category || 'GEN';
-    const code = await this.generateCode(categoryName, purchaseYear);
 
+    let attempts = 0;
+    const maxAttempts = 5;
 
-    try {
-      return await this.prisma.asset.create({
-        data: {
-          ...createAssetDto,
-          purchaseDate: new Date(createAssetDto.purchaseDate),
-          purchaseYear,
-          code,
-        },
-      });
-    } catch (error) {
-      console.error("Asset Create Error:", error);
-      throw new BadRequestException("Asset Create Failed: " + error.message);
-    }
-  }
-
-  async createBulk(items: CreateAssetDto[]) {
-    return this.prisma.$transaction(async (tx) => {
-      const results: any[] = [];
-      for (const item of items) {
-        const purchaseYear = new Date(item.purchaseDate).getFullYear();
-        const catCode = item.category.substring(0, 4).toUpperCase();
-
-        const count = await tx.asset.count({
-          where: { purchaseYear, category: item.category },
-        });
-
-        const seq = (count + 1).toString().padStart(3, '0');
-        const code = `SMK/${catCode}/${purchaseYear}/${seq}`;
-
-        const created = await tx.asset.create({
+    while (attempts < maxAttempts) {
+      try {
+        const code = await this.generateCode(categoryName, purchaseYear);
+        return await this.prisma.asset.create({
           data: {
-            ...item,
-            purchaseDate: new Date(item.purchaseDate),
+            ...createAssetDto,
+            purchaseDate,
             purchaseYear,
             code,
           },
         });
-        results.push(created);
+      } catch (error) {
+        if (
+          error instanceof Prisma.PrismaClientKnownRequestError &&
+          error.code === 'P2002'
+        ) {
+          // Unique constraint violation (likely the code). Retry.
+          attempts++;
+          continue;
+        }
+        console.error('Asset Create Error:', error);
+        throw new BadRequestException(
+          'Gagal membuat aset: ' + (error.message || error),
+        );
       }
-      return results;
-    }, { timeout: 20000 });
+    }
+    throw new BadRequestException(
+      'Gagal membuat kode aset unik setelah beberapa kali percobaan. Silakan coba lagi.',
+    );
+  }
+
+  async createBulk(items: CreateAssetDto[]) {
+    // For bulk, transaction is safer
+    return this.prisma.$transaction(
+      async (tx) => {
+        const results: any[] = [];
+        for (const item of items) {
+          const pDate = item.purchaseDate
+            ? new Date(item.purchaseDate)
+            : new Date();
+          const purchaseYear = isNaN(pDate.getFullYear())
+            ? new Date().getFullYear()
+            : pDate.getFullYear();
+          const catCode = item.category.substring(0, 4).toUpperCase();
+
+          // Increment count based on existing items in this transaction too
+          const count = await tx.asset.count({
+            where: { purchaseYear, category: item.category },
+          });
+
+          const seq = (count + 1).toString().padStart(3, '0');
+          const code = `SMK/${catCode}/${purchaseYear}/${seq}`;
+
+          const created = await tx.asset.create({
+            data: {
+              ...item,
+              purchaseDate: pDate,
+              purchaseYear,
+              code,
+            },
+          });
+          results.push(created);
+        }
+        return results;
+      },
+      { timeout: 30000 },
+    ); // Longer timeout for bulk
   }
 
   async findAll() {

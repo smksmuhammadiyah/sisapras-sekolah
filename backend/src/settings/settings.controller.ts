@@ -5,6 +5,8 @@ import { Role } from '@prisma/client';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
 
+import { Prisma } from '@prisma/client';
+
 @Controller('settings')
 export class SettingsController {
   constructor(private readonly settingsService: SettingsService) { }
@@ -17,7 +19,7 @@ export class SettingsController {
   @Patch()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN)
-  updateSettings(@Body() data: any) {
+  updateSettings(@Body() data: Prisma.SchoolSettingsUpdateInput) {
     return this.settingsService.updateSettings(data);
   }
 }

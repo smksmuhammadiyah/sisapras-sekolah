@@ -3,7 +3,7 @@ import { AssetsService } from './assets.service';
 
 @Controller('assets/public')
 export class AssetsPublicController {
-  constructor(private readonly assetsService: AssetsService) { }
+  constructor(private readonly assetsService: AssetsService) {}
 
   @Get(':id')
   findOnePublic(@Param('id') id: string) {

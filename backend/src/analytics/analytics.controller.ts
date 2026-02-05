@@ -8,7 +8,7 @@ import { Role } from '@prisma/client';
 @Controller('analytics')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class AnalyticsController {
-  constructor(private readonly analyticsService: AnalyticsService) { }
+  constructor(private readonly analyticsService: AnalyticsService) {}
 
   @Get('dashboard')
   @Roles(Role.ADMIN, Role.STAFF)

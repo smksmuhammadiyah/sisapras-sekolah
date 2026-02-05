@@ -9,5 +9,4 @@ import { PrismaModule } from '../prisma/prisma.module';
   providers: [AssetsService],
   controllers: [AssetsController, AssetsPublicController],
 })
-export class AssetsModule { }
-
+export class AssetsModule {}

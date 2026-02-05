@@ -4,7 +4,7 @@ import { CreateRoomDto } from './dto/create-room.dto';
 
 @Injectable()
 export class RoomsService {
-  constructor(private prisma: PrismaService) { }
+  constructor(private prisma: PrismaService) {}
 
   async create(createRoomDto: CreateRoomDto) {
     return this.prisma.room.create({
@@ -14,7 +14,7 @@ export class RoomsService {
 
   async createBulk(items: CreateRoomDto[]) {
     return this.prisma.$transaction(
-      items.map((item) => this.prisma.room.create({ data: item }))
+      items.map((item) => this.prisma.room.create({ data: item })),
     );
   }
 

@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/context/auth-context';
 import { cn } from '@/lib/utils';
+import { ROLE_LABELS } from '@/lib/constants';
 import { Button } from '@/components/ui/button';
 import {
   LayoutDashboard,
@@ -81,14 +82,7 @@ export default function Sidebar({
   }
 
   // Helper for Role Display Name
-  const getRoleName = (role: string) => {
-    switch (role) {
-      case 'ADMIN': return 'Wakasek Sarpras';
-      case 'STAFF': return 'Petugas Sarpras';
-      case 'USER': return 'Guru / Kaprog';
-      default: return role;
-    }
-  };
+  const getRoleName = (role: string) => ROLE_LABELS[role] || role;
 
   return (
     <div className={cn("flex h-full w-full flex-col bg-muted/40 transition-all duration-300", isCollapsed && !isMobile ? "items-center" : "")}>

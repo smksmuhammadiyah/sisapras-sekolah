@@ -1,4 +1,12 @@
-import { Controller, Get, Post, Body, Param, UseGuards, Request } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  UseGuards,
+  Request,
+} from '@nestjs/common';
 import { AuditService } from './audit.service';
 import { CreateAuditDto } from './dto/create-audit.dto';
 import { AuthGuard } from '@nestjs/passport';
@@ -6,7 +14,7 @@ import { AuthGuard } from '@nestjs/passport';
 @Controller('audits')
 @UseGuards(AuthGuard('jwt'))
 export class AuditController {
-  constructor(private readonly auditService: AuditService) { }
+  constructor(private readonly auditService: AuditService) {}
 
   @Post()
   create(@Request() req, @Body() createAuditDto: CreateAuditDto) {

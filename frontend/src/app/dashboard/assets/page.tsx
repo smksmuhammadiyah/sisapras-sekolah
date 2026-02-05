@@ -101,7 +101,7 @@ export default function AssetListPage() {
   };
 
   return (
-    <div className="space-y-6 container mx-auto px-6 py-6 font-sans">
+    <div className="space-y-6 container mx-auto px-4 md:px-6 py-6 font-sans">
       <div className="flex flex-col md:flex-row items-center justify-between gap-4">
         <h1 className="text-3xl font-bold font-heading text-slate-900 dark:text-slate-100">Data Aset</h1>
         <div className="flex items-center gap-2 w-full md:w-auto">

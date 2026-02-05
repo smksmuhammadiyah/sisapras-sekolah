@@ -109,8 +109,8 @@ export function AssetForm({ initialData }: AssetFormProps) {
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (file.size > 2 * 1024 * 1024) {
-        toast.error('Ukuran file maksimal 2MB');
+      if (file.size > 10 * 1024 * 1024) {
+        toast.error('Ukuran file maksimal 10MB');
         return;
       }
       const reader = new FileReader();
@@ -156,7 +156,7 @@ export function AssetForm({ initialData }: AssetFormProps) {
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 max-w-3xl">
         {/* Row 1: Nama & Merk/Spesifikasi */}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormField
             control={form.control}
             name="name"
@@ -186,7 +186,7 @@ export function AssetForm({ initialData }: AssetFormProps) {
         </div>
 
         {/* Row 2: Kategori & Brand */}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormField
             control={form.control}
             name="category"
@@ -216,7 +216,7 @@ export function AssetForm({ initialData }: AssetFormProps) {
         </div>
 
         {/* Row 3: Tahun Perolehan & Asal Barang */}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormField
             control={form.control}
             name="purchaseYear"
@@ -281,7 +281,7 @@ export function AssetForm({ initialData }: AssetFormProps) {
         </div>
 
         {/* Row 4: Keadaan & Status */}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormField
             control={form.control}
             name="condition"
@@ -329,7 +329,7 @@ export function AssetForm({ initialData }: AssetFormProps) {
         </div>
 
         {/* Row 5: Tanggal Pembukuan, Harga, Lokasi */}
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <FormField
             control={form.control}
             name="purchaseDate"
@@ -414,7 +414,7 @@ export function AssetForm({ initialData }: AssetFormProps) {
                 className="cursor-pointer"
               />
               <p className="text-xs text-muted-foreground mt-1">
-                Format: JPG, PNG. Maksimal 2MB.
+                Format: JPG, PNG. Maksimal 10MB.
               </p>
             </div>
           </div>

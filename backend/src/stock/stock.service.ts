@@ -9,8 +9,8 @@ import { StockTransactionType } from '@prisma/client';
 export class StockService {
   constructor(
     private prisma: PrismaService,
-    private yearsService: YearsService
-  ) { }
+    private yearsService: YearsService,
+  ) {}
 
   async createItem(createStockItemDto: CreateStockItemDto) {
     return this.prisma.stockItem.create({

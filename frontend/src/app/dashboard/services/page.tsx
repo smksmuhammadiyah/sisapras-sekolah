@@ -42,7 +42,7 @@ export default function ServiceListPage() {
   }, [searchTerm, services]);
 
   return (
-    <div className="space-y-6 container mx-auto px-6 py-6 font-sans">
+    <div className="space-y-6 container mx-auto px-4 md:px-6 py-6 font-sans">
       <div className="flex flex-col md:flex-row items-center justify-between gap-4">
         <div className="flex items-center gap-4">
           <BackButton className="hidden md:flex" />
@@ -61,47 +61,49 @@ export default function ServiceListPage() {
       </div>
 
       <div className="rounded-xl border shadow-sm bg-white dark:bg-slate-950 overflow-hidden">
-        <Table>
-          <TableHeader className="bg-slate-50 dark:bg-slate-900/50">
-            <TableRow>
-              <TableHead>Tanggal</TableHead>
-              <TableHead>Aset</TableHead>
-              <TableHead>Jenis Servis</TableHead>
-              <TableHead>Biaya</TableHead>
-              <TableHead>Teknisi / Vendor</TableHead>
-              <TableHead className="text-right">Aksi</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredServices.map((service) => (
-              <TableRow key={service.id} className="hover:bg-slate-50/50 transition-colors">
-                <TableCell>{new Date(service.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</TableCell>
-                <TableCell className="font-medium">{service.asset?.name || 'Aset Dihapus'}</TableCell>
-                <TableCell>
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                    {service.type}
-                  </span>
-                </TableCell>
-                <TableCell>{new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(service.cost)}</TableCell>
-                <TableCell>{service.technician || '-'}</TableCell>
-                <TableCell className="text-right">
-                  <Button variant="ghost" size="icon" asChild>
-                    <Link href={`/dashboard/services/${service.id}`}>
-                      <Eye className="h-4 w-4 text-slate-500 hover:text-blue-600" />
-                    </Link>
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))}
-            {filteredServices.length === 0 && (
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader className="bg-slate-50 dark:bg-slate-900/50">
               <TableRow>
-                <TableCell colSpan={6} className="text-center h-32 text-muted-foreground">
-                  {searchTerm ? 'Tidak ada data yang cocok dengan pencarian.' : 'Belum ada riwayat perbaikan yang tercatat.'}
-                </TableCell>
+                <TableHead>Tanggal</TableHead>
+                <TableHead>Aset</TableHead>
+                <TableHead>Jenis Servis</TableHead>
+                <TableHead>Biaya</TableHead>
+                <TableHead>Teknisi / Vendor</TableHead>
+                <TableHead className="text-right">Aksi</TableHead>
               </TableRow>
-            )}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {filteredServices.map((service) => (
+                <TableRow key={service.id} className="hover:bg-slate-50/50 transition-colors">
+                  <TableCell>{new Date(service.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</TableCell>
+                  <TableCell className="font-medium">{service.asset?.name || 'Aset Dihapus'}</TableCell>
+                  <TableCell>
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                      {service.type}
+                    </span>
+                  </TableCell>
+                  <TableCell>{new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(service.cost)}</TableCell>
+                  <TableCell>{service.technician || '-'}</TableCell>
+                  <TableCell className="text-right">
+                    <Button variant="ghost" size="icon" asChild>
+                      <Link href={`/dashboard/services/${service.id}`}>
+                        <Eye className="h-4 w-4 text-slate-500 hover:text-blue-600" />
+                      </Link>
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+              {filteredServices.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={6} className="text-center h-32 text-muted-foreground">
+                    {searchTerm ? 'Tidak ada data yang cocok dengan pencarian.' : 'Belum ada riwayat perbaikan yang tercatat.'}
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </div>
       </div>
     </div>
   );

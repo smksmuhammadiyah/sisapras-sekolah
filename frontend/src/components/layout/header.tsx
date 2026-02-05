@@ -1,14 +1,16 @@
 "use client";
 
 import { usePathname } from 'next/navigation';
+import { useState } from 'react';
 import { NotificationsDropdown } from './notifications-dropdown';
 import { Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import Sidebar from '@/components/layout/sidebar';
 
 export function Header() {
   const pathname = usePathname();
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   // Helper to format pathname into title
   const getTitle = () => {
@@ -50,18 +52,21 @@ export function Header() {
       <div className="flex items-center gap-4">
         {/* Mobile Menu Trigger */}
         <div className="md:hidden mr-2">
-          <Sheet>
+          <Sheet open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon">
                 <Menu className="h-6 w-6" />
               </Button>
             </SheetTrigger>
             <SheetContent side="left" className="p-0 w-72">
-              <Sidebar isMobile onLinkClick={() => {
-                // We can't easily close specific sheet from here without controlled state, 
-                // but clicking a link will navigate and usually close via re-render or we can let user close.
-                // Ideally we use a wrapper to close. For now, let's just show it.
-              }} />
+              <SheetTitle className="sr-only">Menu Navigasi</SheetTitle>
+              <SheetDescription className="sr-only">
+                Menu navigasi utama untuk akses ke berbagai fitur aplikasi.
+              </SheetDescription>
+              <Sidebar
+                isMobile
+                onLinkClick={() => setIsDrawerOpen(false)}
+              />
             </SheetContent>
           </Sheet>
         </div>

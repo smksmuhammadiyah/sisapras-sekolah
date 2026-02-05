@@ -7,6 +7,6 @@ import { PrismaModule } from '../prisma/prisma.module';
   imports: [PrismaModule],
   controllers: [YearsController],
   providers: [YearsService],
-  exports: [YearsService] // Export service so others can use it
+  exports: [YearsService], // Export service so others can use it
 })
-export class YearsModule { }
+export class YearsModule {}

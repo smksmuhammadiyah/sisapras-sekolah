@@ -47,7 +47,7 @@ export default function NewServicePage() {
   }
 
   return (
-    <div className="space-y-6 container mx-auto px-6 py-6 font-sans">
+    <div className="space-y-6 container mx-auto px-4 md:px-6 py-6 font-sans">
       <div className="flex items-center gap-4">
         <BackButton />
         <h1 className="text-3xl font-bold font-heading">Catat Perbaikan Baru</h1>
