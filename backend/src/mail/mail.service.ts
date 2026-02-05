@@ -22,19 +22,26 @@ export class MailService {
     this.logger.log(`Sending confirmation email to ${user.email}`);
   }
 
-  async sendForgotPassword(email: string, token: string) {
-    const url = `http://localhost:3000/auth/reset-password?token=${token}`;
+  async sendForgotPassword(user: any, token: string) {
+    const url = `http://localhost:3001/reset-password?token=${token}`;
 
     await this.mailerService.sendMail({
-      to: email,
-      subject: 'Reset Password Request',
+      to: user.email,
+      subject: 'Reset Password - SIM-SAPRAS',
       html: `
-           <h3>Reset Password</h3>
-           <p>Click here to reset your password:</p>
-           <p><a href="${url}">Reset Password</a></p>
+           <h3>Halo ${user.fullName || user.username},</h3>
+           <p>Anda menerima email ini karena ada permintaan reset password untuk akun Anda.</p>
+           <ul>
+             <li><b>Username:</b> ${user.username}</li>
+             <li><b>Role:</b> ${user.role}</li>
+           </ul>
+           <p>Klik link berikut untuk mengatur password baru:</p>
+           <p><a href="${url}" style="background-color:#3b82f6;color:white;padding:10px 20px;text-decoration:none;border-radius:5px;">Reset Password</a></p>
+           <p>Link ini berlaku selama 1 jam.</p>
+           <p>Jika Anda tidak meminta reset password, abaikan email ini.</p>
         `
     });
-    this.logger.log(`Sending reset password email to ${email}`);
+    this.logger.log(`Sending reset password email to ${user.email}`);
   }
 
   async sendProcurementNotification(email: string, title: string, status: string, notes?: string) {
@@ -52,10 +59,20 @@ export class MailService {
         to: email,
         subject,
         html: `
-            <h3>Status Usulan Pengadaan Diperbarui</h3>
-            <p>Usulan <b>"${title}"</b> statusnya kini: <b style="color:${color}">${statusText}</b>.</p>
-            ${notes ? `<p>Catatan: ${notes}</p>` : ''}
-            <p>Silakan login ke aplikasi untuk detailnya.</p>
+            <h3>Status Pengadaan Diperbarui</h3>
+            <p>Halo,</p>
+            <p>Usulan pengadaan Anda dengan judul:</p>
+            <p style="background-color:#f3f4f6;padding:10px;border-radius:5px;font-weight:bold;">${title}</p>
+            <p>Telah diperbarui menjadi: <b style="color:${color};font-size:16px;">${statusText}</b></p>
+            
+            ${notes ? `
+            <div style="margin-top:10px;border-left:4px solid ${color};padding-left:10px;">
+              <p style="margin:0;font-weight:bold;">Catatan Admin:</p>
+              <p style="margin:5px 0 0 0;font-style:italic;">"${notes}"</p>
+            </div>
+            ` : ''}
+            
+            <p style="margin-top:20px;">Silakan login ke aplikasi untuk melihat detail selengkapnya.</p>
         `
       });
       this.logger.log(`Sending procurement notification to ${email}`);

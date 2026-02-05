@@ -38,6 +38,16 @@ export default function AssetDetailPage() {
             <CardTitle>Detail Aset</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
+            {/* Asset Photo */}
+            {asset.imageUrl && (
+              <div className="mb-4">
+                <img
+                  src={asset.imageUrl}
+                  alt={asset.name}
+                  className="w-full max-h-64 object-cover rounded-lg border"
+                />
+              </div>
+            )}
             <div className="flex justify-between border-b pb-2">
               <span className="text-muted-foreground">Kategori</span>
               <span className="font-medium">{asset.category}</span>
@@ -65,7 +75,7 @@ export default function AssetDetailPage() {
             </CardHeader>
             <CardContent className="flex justify-center pb-6">
               <QRGenerator
-                value={`/assets/${asset.id}`}
+                value={typeof window !== 'undefined' ? `${window.location.origin}/asset/${asset.id}` : `/asset/${asset.id}`}
                 label={asset.name}
                 code={asset.code}
               />

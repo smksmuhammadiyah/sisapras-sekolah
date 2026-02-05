@@ -80,13 +80,50 @@ export const PrintableLayout = forwardRef<HTMLDivElement, PrintableLayoutProps>(
         <div ref={ref} className="bg-white text-black shadow-lg print:shadow-none p-[15mm] w-[210mm] min-h-[297mm] print:w-full print:min-h-0 mx-auto box-border flex flex-col">
           <style type="text/css" media="print">
             {`
-              @page { size: A4 portrait; margin: 10mm; }
-              body { -webkit-print-color-adjust: exact; }
-              table { width: 100%; border-collapse: collapse; }
-              thead { display: table-header-group; }
-              tr { page-break-inside: avoid; }
-              input, textarea { border: none !important; background: transparent !important; padding: 0 !important; }
-              .no-print { display: none !important; }
+              @page { 
+                size: A4 portrait; 
+                margin: 10mm; 
+              }
+              body { 
+                -webkit-print-color-adjust: exact; 
+                print-color-adjust: exact;
+              }
+              table { 
+                width: 100%; 
+                border-collapse: collapse; 
+                font-size: 11px;
+              }
+              thead { 
+                display: table-header-group; 
+              }
+              tfoot {
+                display: table-footer-group;
+              }
+              tr { 
+                page-break-inside: avoid; 
+              }
+              td, th {
+                padding: 4px 6px;
+                word-wrap: break-word;
+                overflow-wrap: break-word;
+              }
+              input, textarea { 
+                border: none !important; 
+                background: transparent !important; 
+                padding: 0 !important; 
+              }
+              .no-print { 
+                display: none !important; 
+              }
+              /* Ensure signatures don't break across pages */
+              .break-inside-avoid {
+                break-inside: avoid;
+                page-break-inside: avoid;
+              }
+              /* Force page break before signatures if needed */
+              .signature-section {
+                break-before: avoid;
+              }
             `}
           </style>
 

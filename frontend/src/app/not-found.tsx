@@ -19,10 +19,15 @@ export default function NotFound() {
           </p>
         </div>
 
-        <div className="pt-4">
+        <div className="pt-4 flex flex-col gap-3">
           <Button asChild className="bg-blue-600 hover:bg-blue-700 text-white gap-2 h-12 px-8 rounded-full shadow-lg shadow-blue-500/20 transition-all hover:scale-105">
-            <Link href="/dashboard">
-              <ArrowLeft className="h-4 w-4" /> Kembali ke Dashboard
+            <Link href="/login">
+              <ArrowLeft className="h-4 w-4" /> Ke Halaman Login
+            </Link>
+          </Button>
+          <Button asChild variant="outline" className="gap-2">
+            <Link href="/">
+              Ke Halaman Utama
             </Link>
           </Button>
         </div>

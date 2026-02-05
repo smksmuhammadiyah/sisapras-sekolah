@@ -75,7 +75,9 @@ export function RoomForm() {
             </FormItem>
           )}
         />
-        <Button type="submit">Simpan Ruangan</Button>
+        <Button type="submit" disabled={form.formState.isSubmitting}>
+          {form.formState.isSubmitting ? 'Menyimpan...' : 'Simpan Ruangan'}
+        </Button>
       </form>
     </Form>
   );

@@ -13,19 +13,28 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Plus, ArrowRightLeft } from 'lucide-react';
+import { Plus, ArrowRightLeft, Trash } from 'lucide-react';
+import { toast } from 'sonner';
+import { useAuth } from '@/context/auth-context';
 
 export default function StockListPage() {
+  const { user } = useAuth();
   const [items, setItems] = useState<any[]>([]);
   const [filteredItems, setFilteredItems] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
 
+  const isAdminOrStaff = user?.role === 'ADMIN' || user?.role === 'STAFF';
+
   useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = () => {
     api.get('/stock/items').then(res => {
       setItems(res.data);
       setFilteredItems(res.data);
     }).catch(console.error);
-  }, []);
+  };
 
   useEffect(() => {
     if (!searchTerm) {
@@ -39,24 +48,37 @@ export default function StockListPage() {
     }
   }, [searchTerm, items]);
 
+  const handleDelete = async (id: string) => {
+    if (!confirm('Hapus item stok ini? Semua transaksi terkait juga akan dihapus.')) return;
+    try {
+      await api.delete(`/stock/items/${id}`);
+      toast.success('Item berhasil dihapus');
+      loadData();
+    } catch (e) {
+      toast.error('Gagal menghapus item');
+    }
+  };
+
   return (
     <div className="space-y-6 container mx-auto px-6 py-6 font-sans">
       <div className="flex flex-col md:flex-row items-center justify-between gap-4">
         <h1 className="text-3xl font-bold font-heading text-slate-900 dark:text-slate-100">Stok Habis Pakai</h1>
         <div className="flex flex-col md:flex-row items-center gap-2 w-full md:w-auto">
           <SearchInput onSearch={setSearchTerm} className="w-full md:w-64" placeholder="Cari barang..." />
-          <div className="flex gap-2 w-full md:w-auto">
-            <Button variant="outline" asChild className="flex-1 md:flex-none">
-              <Link href="/dashboard/stock/transaction">
-                <ArrowRightLeft className="mr-2 h-4 w-4" /> Transaksi
-              </Link>
-            </Button>
-            <Button asChild className="flex-1 md:flex-none">
-              <Link href="/dashboard/stock/new">
-                <Plus className="mr-2 h-4 w-4" /> Item Baru
-              </Link>
-            </Button>
-          </div>
+          {isAdminOrStaff && (
+            <div className="flex gap-2 w-full md:w-auto">
+              <Button variant="outline" asChild className="flex-1 md:flex-none">
+                <Link href="/dashboard/stock/transaction">
+                  <ArrowRightLeft className="mr-2 h-4 w-4" /> Transaksi
+                </Link>
+              </Button>
+              <Button asChild className="flex-1 md:flex-none">
+                <Link href="/dashboard/stock/new">
+                  <Plus className="mr-2 h-4 w-4" /> Item Baru
+                </Link>
+              </Button>
+            </div>
+          )}
         </div>
       </div>
 
@@ -69,6 +91,7 @@ export default function StockListPage() {
               <TableHead>Stok Min.</TableHead>
               <TableHead>Qty Saat Ini</TableHead>
               <TableHead>Status</TableHead>
+              {isAdminOrStaff && <TableHead className="text-right">Aksi</TableHead>}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -85,11 +108,18 @@ export default function StockListPage() {
                     <span className="text-green-600">Aman</span>
                   )}
                 </TableCell>
+                {isAdminOrStaff && (
+                  <TableCell className="text-right">
+                    <Button variant="ghost" size="icon" className="text-destructive" onClick={() => handleDelete(item.id)}>
+                      <Trash className="h-4 w-4" />
+                    </Button>
+                  </TableCell>
+                )}
               </TableRow>
             ))}
             {filteredItems.length === 0 && (
               <TableRow>
-                <TableCell colSpan={5} className="text-center h-24 text-muted-foreground">
+                <TableCell colSpan={isAdminOrStaff ? 6 : 5} className="text-center h-24 text-muted-foreground">
                   {searchTerm ? 'Tidak ada barang yang cocok.' : 'Belum ada data barang.'}
                 </TableCell>
               </TableRow>
@@ -100,3 +130,4 @@ export default function StockListPage() {
     </div>
   );
 }
+

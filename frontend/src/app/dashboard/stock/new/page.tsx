@@ -84,7 +84,9 @@ export default function NewStockItemPage() {
                 </FormItem>
               )}
             />
-            <Button type="submit">Simpan Stok</Button>
+            <Button type="submit" disabled={form.formState.isSubmitting}>
+              {form.formState.isSubmitting ? 'Menyimpan...' : 'Simpan Stok'}
+            </Button>
           </form>
         </Form>
       </div>

@@ -58,6 +58,7 @@ export default function Sidebar({
       { href: '/dashboard/stock', label: 'Stok Habis Pakai', icon: Package },
       { href: '/dashboard/procurement', label: 'E-Usulan', icon: ShoppingCart },
       { href: '/dashboard/services', label: 'Riwayat Servis', icon: Wrench },
+      { href: '/dashboard/lending', label: 'Peminjaman Barang', icon: Package },
       { href: '/dashboard/reports', label: 'Laporan', icon: FileText },
       { href: '/dashboard/users', label: 'Manajemen User', icon: Users },
       { href: '/dashboard/settings', label: 'Pengaturan Sekolah', icon: Building2 },
@@ -68,12 +69,14 @@ export default function Sidebar({
       { href: '/dashboard/staff', label: 'Beranda', icon: LayoutDashboard },
       { href: '/dashboard/audits', label: 'Audit Tugas Saya', icon: ClipboardList },
       { href: '/dashboard/services', label: 'Perbaikan Aset', icon: Wrench },
+      { href: '/dashboard/lending', label: 'Peminjaman Barang', icon: Package },
     );
   } else {
     links.push(
       { href: '/dashboard/user', label: 'Beranda', icon: LayoutDashboard },
       { href: '/dashboard/procurement', label: 'Usulan Saya', icon: ShoppingCart },
       { href: '/dashboard/stock', label: 'Cek Stok', icon: Package },
+      { href: '/dashboard/lending', label: 'Pinjam Barang', icon: Package },
     );
   }
 

@@ -56,6 +56,11 @@ export default function ProfilePage() {
                     <Input id="username" defaultValue={user?.username} disabled />
                   </div>
                   <div className="space-y-2">
+                    <Label htmlFor="email">Email</Label>
+                    <Input id="email" defaultValue={user?.email || '-'} disabled />
+                    <p className="text-[10px] text-muted-foreground italic">Email digunakan untuk reset password dan notifikasi.</p>
+                  </div>
+                  <div className="space-y-2">
                     <Label htmlFor="role">Role</Label>
                     <Input id="role" defaultValue={user?.role} disabled />
                   </div>

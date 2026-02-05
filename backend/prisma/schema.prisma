@@ -58,6 +58,7 @@ model User {
   procurements     Procurement[]
   stockTransactions StockTransaction[]
   reportedServices Service[] @relation("ServiceReporter")
+  lendings         Lending[]
 }
 
 model Room {
@@ -76,13 +77,15 @@ model Asset {
   category      String
   spec          String?
   brand         String?
-  origin        String?
+  origin        String?        // BOS/Komite/Hibah/Inv. Lama
   purchaseDate  DateTime
-  purchaseYear  Int?
+  purchaseYear  Int?           // null = Tidak Diketahui
   price         Float?
   isWhiteListed Boolean?       @default(false)
   
   condition     AssetCondition @default(GOOD)
+  assetStatus   String?        // Baru/Bekas/Hasil Pemutihan
+  notes         String?        // Keterangan
   
   roomId        String?
   room          Room?          @relation(fields: [roomId], references: [id])
@@ -91,7 +94,9 @@ model Asset {
   
   auditItems    AuditItem[]
   services      Service[]
+  lendings      Lending[]
   
+  imageUrl      String?       // URL to asset photo
   deletedAt     DateTime?
 }
 
@@ -176,6 +181,7 @@ model Procurement {
   status          ProcurementStatus @default(PENDING)
   rejectionReason String?
   createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
   
   requesterId     String
   requester       User              @relation(fields: [requesterId], references: [id])
@@ -227,3 +233,38 @@ model AcademicYear {
   procurements      Procurement[]
   stockTransactions StockTransaction[]
 }
+
+enum LendingStatus {
+  BORROWED
+  RETURNED
+}
+
+model Lending {
+  id              String        @id @default(uuid())
+  
+  assetId         String
+  asset           Asset         @relation(fields: [assetId], references: [id])
+  
+  borrowerId      String
+  borrower        User          @relation(fields: [borrowerId], references: [id])
+  
+  borrowerName    String        // Name recorded at borrow time
+  borrowDate      DateTime      @default(now())
+  returnDate      DateTime?
+  
+  conditionBefore String        // e.g., GOOD, BROKEN_LIGHT
+  conditionAfter  String?
+  
+  notes           String?
+  status          LendingStatus @default(BORROWED)
+}
+
+model PasswordReset {
+  id        String   @id @default(uuid())
+  email     String
+  token     String   @unique
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+

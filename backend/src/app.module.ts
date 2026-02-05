@@ -17,9 +17,10 @@ import { YearsModule } from './years/years.module';
 import { HealthModule } from './health/health.module';
 import { CleanupModule } from './cron/cleanup.module';
 import { MailModule } from './mail/mail.module';
+import { LendingModule } from './lending/lending.module';
 
 @Module({
-  imports: [PrismaModule, AuthModule, UsersModule, AssetsModule, RoomsModule, AuditModule, ServicesModule, StockModule, ProcurementModule, NotificationsModule, AnalyticsModule, SettingsModule, YearsModule, HealthModule, CleanupModule, MailModule],
+  imports: [PrismaModule, AuthModule, UsersModule, AssetsModule, RoomsModule, AuditModule, ServicesModule, StockModule, ProcurementModule, NotificationsModule, AnalyticsModule, SettingsModule, YearsModule, HealthModule, CleanupModule, MailModule, LendingModule],
   controllers: [AppController],
   providers: [AppService],
 })

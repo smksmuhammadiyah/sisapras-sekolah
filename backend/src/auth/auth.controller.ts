@@ -23,12 +23,14 @@ export class AuthController {
     return this.authService.forgotPassword(email);
   }
 
+  @Post('reset-password')
+  async resetPassword(@Body() body: { token: string; password: string }) {
+    return this.authService.resetPassword(body.token, body.password);
+  }
+
   @Post('change-password')
   async changePassword(@Body() body: any) {
-    // In a real app, we should get the userId from the JWT via @Request() req.
-    // However, since we haven't set up the decorator in full context here, I'll assume usage of the username in body for now combined with logic, 
-    // OR normally: changePassword(@Req() req, @Body() body). 
-    // Let's implement stricter safety.
     return this.authService.changePassword(body.userId, body);
   }
 }
+

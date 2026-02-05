@@ -64,12 +64,12 @@ export default function ProcurementDetailPage() {
     }
   };
 
-  const isKaprog = user?.role === 'KAPROG';
+  if (!procurement) return <div>Loading...</div>;
 
+  const isKaprog = user?.role === 'KAPROG';
   const canApprove =
     (isKaprog && procurement.status === 'PENDING') ||
     (isAdmin && (procurement.status === 'PENDING' || procurement.status === 'REVIEW_WAKASEK'));
-
   const approveLabel = isAdmin ? "Setujui Final" : "Review & Teruskan";
 
   // Helper for friendly status label
@@ -83,8 +83,6 @@ export default function ProcurementDetailPage() {
     }
   };
 
-  if (!procurement) return <div>Loading...</div>;
-
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -94,6 +92,11 @@ export default function ProcurementDetailPage() {
           <Badge variant={procurement.status === 'APPROVED' ? 'default' : procurement.status === 'REJECTED' ? 'destructive' : 'outline'}>
             {getStatusLabel(procurement.status)}
           </Badge>
+          {procurement.updatedAt && (
+            <Badge variant="outline" className="text-muted-foreground">
+              Updated: {new Date(procurement.updatedAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+            </Badge>
+          )}
         </div>
       </div>
 

@@ -45,9 +45,16 @@ export class ProcurementService {
     });
   }
 
-  async findAll() {
+  async findAll(userId?: string, role?: string) {
+    // If user is not ADMIN or STAFF, only show their own procurements
+    const where: any = { deletedAt: null };
+
+    if (role && role !== 'ADMIN' && role !== 'STAFF') {
+      where.requesterId = userId;
+    }
+
     return this.prisma.procurement.findMany({
-      where: { deletedAt: null },
+      where,
       include: { requester: true, items: true },
       orderBy: { createdAt: 'desc' },
     });

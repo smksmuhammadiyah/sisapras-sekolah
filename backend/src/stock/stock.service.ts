@@ -72,4 +72,14 @@ export class StockService {
       }),
     ]);
   }
+
+  async deleteItem(id: string) {
+    // Delete all transactions first (cascade), then item
+    await this.prisma.stockTransaction.deleteMany({
+      where: { stockItemId: id },
+    });
+    return this.prisma.stockItem.delete({
+      where: { id },
+    });
+  }
 }

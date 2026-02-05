@@ -45,4 +45,16 @@ export class CreateAssetDto {
   @IsString()
   @IsOptional()
   managedById?: string;
+
+  @IsString()
+  @IsOptional()
+  imageUrl?: string;
+
+  @IsString()
+  @IsOptional()
+  notes?: string;
+
+  @IsString()
+  @IsOptional()
+  assetStatus?: string;
 }

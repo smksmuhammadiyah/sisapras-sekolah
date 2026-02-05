@@ -41,7 +41,12 @@ export default function LoginPage() {
       toast.success('Login successful');
     } catch (error) {
       console.error(error);
-      toast.error('Invalid credentials');
+      const isPending = (error as any).response?.data?.message === 'Account pending approval by Admin';
+      if (isPending) {
+        toast.error('Akun menunggu persetujuan Admin');
+      } else {
+        toast.error('Username atau Password salah');
+      }
     } finally {
       setLoading(false);
     }
@@ -120,14 +125,17 @@ export default function LoginPage() {
           </form>
         </Form>
         <div className="text-center text-sm space-y-2">
+          <Link href="/forgot-password" className="text-primary hover:underline font-medium">
+            Lupa Password?
+          </Link>
           <div className="text-muted-foreground">
-            Don&apos;t have an account?{" "}
+            Belum punya akun?{" "}
             <Link href="/auth/register" className="text-primary hover:underline font-medium">
-              Register
+              Daftar
             </Link>
           </div>
           <Link href="/" className="text-muted-foreground hover:text-primary underline underline-offset-4">
-            Back to Home
+            Kembali ke Home
           </Link>
         </div>
       </div>

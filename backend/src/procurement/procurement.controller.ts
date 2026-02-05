@@ -14,8 +14,8 @@ export class ProcurementController {
   }
 
   @Get()
-  findAll() {
-    return this.procurementService.findAll();
+  findAll(@Request() req) {
+    return this.procurementService.findAll(req.user.userId, req.user.role);
   }
 
   @Get('trash/all')

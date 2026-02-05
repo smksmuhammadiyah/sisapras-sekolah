@@ -71,7 +71,7 @@ export default function RegisterPage() {
             </CardDescription>
           </CardHeader>
           <CardFooter className="justify-center">
-            <Link href="/auth/login">
+            <Link href="/login">
               <Button variant="outline">Kembali ke Login</Button>
             </Link>
           </CardFooter>
@@ -81,7 +81,7 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen grid lg:grid-cols-2">
+    <div className="h-screen overflow-hidden grid lg:grid-cols-2">
       {/* Left: Branding */}
       <div className="hidden lg:flex flex-col bg-slate-900 text-white p-12 justify-between">
         <div className="flex items-center gap-2 text-2xl font-bold tracking-tight">
@@ -104,9 +104,9 @@ export default function RegisterPage() {
       </div>
 
       {/* Right: Register Form */}
-      <div className="flex items-center justify-center p-6 bg-white overflow-auto relative">
+      <div className="flex items-center justify-center p-6 bg-white overflow-auto relative h-full">
         <div className="absolute top-6 right-6">
-          <Link href="/auth/login" className="text-sm font-medium text-slate-600 hover:text-slate-900 flex items-center gap-2">
+          <Link href="/login" className="text-sm font-medium text-slate-600 hover:text-slate-900 flex items-center gap-2">
             Sudah punya akun? <span className="text-primary underline">Login</span>
           </Link>
         </div>

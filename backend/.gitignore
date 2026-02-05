@@ -29,3 +29,6 @@ test/coverage/
 
 # NestJS build
 tsconfig.build.tsbuildinfo
+
+# TestSprite
+testsprite_tests/
