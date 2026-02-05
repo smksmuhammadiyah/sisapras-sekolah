@@ -71,7 +71,11 @@ export default function ProfilePage() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <ChangePasswordForm userId={user.id} username={user.username} />
+                  {user ? (
+                    <ChangePasswordForm userId={user.id} username={user.username} />
+                  ) : (
+                    <div>Loading...</div>
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>

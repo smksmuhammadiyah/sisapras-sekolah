@@ -19,7 +19,6 @@ import {
   Settings,
   ChevronLeft,
   ChevronRight,
-  ChevronRight,
   Trash2,
   Users,
   Building2
