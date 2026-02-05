@@ -5,6 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ShoppingCart, FileText, CheckCircle } from 'lucide-react';
 import { QuickStart } from '@/components/dashboard/QuickStart';
 
+import api from '@/lib/api';
+
 export default function UserDashboard() {
   const [stats, setStats] = useState({
     myProposals: 0,
@@ -13,12 +15,15 @@ export default function UserDashboard() {
   });
 
   useEffect(() => {
-    // Mock fetch for demo
-    setStats({
-      myProposals: 2,
-      approvedProposals: 1,
-      itemsInStock: 150,
-    });
+    const fetchStats = async () => {
+      try {
+        const res = await api.get('/analytics/user-summary');
+        setStats(res.data);
+      } catch (error) {
+        console.error("Failed to fetch dashboard stats", error);
+      }
+    };
+    fetchStats();
   }, []);
 
   return (

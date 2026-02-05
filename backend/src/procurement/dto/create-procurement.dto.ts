@@ -16,6 +16,10 @@ export class CreateProcurementItemDto {
 
   @IsNumber()
   priceEst: number;
+
+  @IsNumber()
+  @IsOptional()
+  price?: number;
 }
 
 export class CreateProcurementDto {

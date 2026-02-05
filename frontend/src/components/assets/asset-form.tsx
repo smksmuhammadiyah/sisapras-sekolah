@@ -110,6 +110,8 @@ export function AssetForm({ initialData }: AssetFormProps) {
   };
 
   async function onSubmit(values: z.infer<typeof assetSchema>) {
+    if (form.formState.isSubmitting) return;
+
     try {
       // Convert values for API
       const payload = {
@@ -119,6 +121,7 @@ export function AssetForm({ initialData }: AssetFormProps) {
       };
 
       if (initialData) {
+        await api.patch(`/assets/${initialData.id}`, payload);
         toast.success('Asset updated');
       } else {
         await api.post('/assets', payload);

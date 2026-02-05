@@ -15,19 +15,21 @@ import {
 } from '@/components/ui/table';
 import { Plus, Eye, Edit, Trash } from 'lucide-react';
 import { toast } from 'sonner';
+import { AssetImportDialog } from '@/components/assets/asset-import-dialog';
 
 interface Asset {
   id: string;
   code: string;
   name: string;
+  brand: string;
   category: string;
-  condition: string;
+  condition: string; // GOOD/BROKEN_LIGHT/etc from backend enum
+  assetStatus?: string; // Baru/Bekas/Hasil Pemutihan
+  origin?: string; // BOS/Komite/etc
+  purchaseYear?: number;
   room?: { name: string };
+  price?: number;
 }
-
-import { AssetImportDialog } from '@/components/assets/asset-import-dialog';
-
-// ... existing imports
 
 export default function AssetListPage() {
   const [assets, setAssets] = useState<Asset[]>([]);
@@ -87,6 +89,16 @@ export default function AssetListPage() {
     }
   };
 
+  // Helper for Condition Badge
+  const getConditionBadge = (c: string) => {
+    switch (c) {
+      case 'GOOD': return <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">Baik</span>;
+      case 'BROKEN_LIGHT': return <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">Rusak Ringan</span>;
+      case 'BROKEN_HEAVY': return <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">Rusak Berat</span>;
+      default: return c;
+    }
+  };
+
   return (
     <div className="space-y-6 container mx-auto px-6 py-6 font-sans">
       <div className="flex flex-col md:flex-row items-center justify-between gap-4">
@@ -102,13 +114,16 @@ export default function AssetListPage() {
         </div>
       </div>
 
-      <div className="rounded-md border shadow-sm bg-white dark:bg-slate-950">
+      <div className="rounded-md border shadow-sm bg-white dark:bg-slate-950 overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
               <TableHead>Kode</TableHead>
               <TableHead>Nama Aset</TableHead>
+              <TableHead>Merk/Spec</TableHead>
               <TableHead>Kategori</TableHead>
+              <TableHead>Asal</TableHead>
+              <TableHead>Tahun</TableHead>
               <TableHead>Lokasi</TableHead>
               <TableHead>Kondisi</TableHead>
               <TableHead className="text-right">Aksi</TableHead>
@@ -117,11 +132,17 @@ export default function AssetListPage() {
           <TableBody>
             {filteredAssets.map((asset) => (
               <TableRow key={asset.id}>
-                <TableCell className="font-medium">{asset.code}</TableCell>
-                <TableCell>{asset.name}</TableCell>
+                <TableCell className="font-mono text-xs">{asset.code}</TableCell>
+                <TableCell className="font-medium">
+                  <div>{asset.name}</div>
+                  {asset.assetStatus && <div className="text-[10px] text-muted-foreground uppercase">{asset.assetStatus}</div>}
+                </TableCell>
+                <TableCell>{asset.brand || '-'}</TableCell>
                 <TableCell>{asset.category}</TableCell>
+                <TableCell>{asset.origin || '-'}</TableCell>
+                <TableCell>{asset.purchaseYear || (asset.assetStatus === 'Hasil Pemutihan' ? 'Pemutihan' : '-')}</TableCell>
                 <TableCell>{asset.room?.name || '-'}</TableCell>
-                <TableCell>{asset.condition}</TableCell>
+                <TableCell>{getConditionBadge(asset.condition)}</TableCell>
                 <TableCell className="text-right">
                   <div className="flex justify-end gap-2">
                     <Button variant="ghost" size="icon" asChild>
@@ -143,7 +164,7 @@ export default function AssetListPage() {
             ))}
             {filteredAssets.length === 0 && (
               <TableRow>
-                <TableCell colSpan={6} className="text-center h-24 text-muted-foreground">
+                <TableCell colSpan={9} className="text-center h-24 text-muted-foreground">
                   {searchTerm ? 'Tidak ada aset yang cocok dengan pencarian.' : 'Belum ada data aset.'}
                 </TableCell>
               </TableRow>

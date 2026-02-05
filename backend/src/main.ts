@@ -8,7 +8,7 @@ let app: any;
 async function bootstrap() {
   if (!app) {
     app = await NestFactory.create(AppModule);
-    app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
+    app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
     app.enableCors({
       origin: '*', // Allow all
       methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
@@ -24,7 +24,7 @@ async function bootstrap() {
 if (!process.env.VERCEL) {
   (async () => {
     const localApp = await NestFactory.create(AppModule);
-    localApp.useGlobalPipes(new ValidationPipe({ whitelist: true }));
+    localApp.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
     localApp.enableCors({ origin: '*' });
     await localApp.listen(process.env.PORT ?? 3000);
     console.log(`Application is running on: ${await localApp.getUrl()}`);

@@ -14,14 +14,10 @@ export default function StaffDashboard() {
   });
 
   useEffect(() => {
-    // In real app, use specific endpoints
     const fetchStats = async () => {
       try {
-        // Mock logic for demo
-        const pendingAudits = 5;
-        const brokenAssets = 12;
-        const upcomingServices = 3;
-        setStats({ pendingAudits, brokenAssets, upcomingServices });
+        const res = await api.get('/analytics/staff-summary');
+        setStats(res.data);
       } catch (e) {
         console.error("Failed to fetch stats");
       }

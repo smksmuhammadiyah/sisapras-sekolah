@@ -8,7 +8,9 @@ import { Button } from '@/components/ui/button';
 import { Download, Loader2, Printer, Eye } from 'lucide-react';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import { toast } from 'sonner';
-import axios from 'axios';
+import api from '@/lib/api';
+import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
+import { DialogTitle } from '@radix-ui/react-dialog';
 
 interface ProcurementItem {
   id: number;
@@ -20,12 +22,7 @@ interface ProcurementItem {
   requester: string;
 }
 
-const MOCK_PROCUREMENT: ProcurementItem[] = [
-  { id: 1, itemName: "PC Desktop Core i5 (Lab Multimedia)", qty: 10, estimatedPrice: 8500000, total: 85000000, status: "Disetujui", requester: "Ka. Kompetensi RPL" },
-  { id: 2, itemName: "Printer L3210", qty: 2, estimatedPrice: 2800000, total: 5600000, status: "Menunggu", requester: "Tata Usaha" },
-  { id: 3, itemName: "Kursi Siswa Besi/Kayu", qty: 40, estimatedPrice: 450000, total: 18000000, status: "Disetujui", requester: "Wakasek Sarpras" },
-  { id: 4, itemName: "Spidol Whiteboard (Box)", qty: 50, estimatedPrice: 85000, total: 4250000, status: "Selesai", requester: "Logistik" },
-];
+
 
 export function ProcurementReportButton() {
   const componentRef = useRef<HTMLDivElement>(null);
@@ -48,10 +45,31 @@ export function ProcurementReportButton() {
 
   useEffect(() => {
     if (open) {
-      setData(MOCK_PROCUREMENT);
+      const fetchData = async () => {
+        try {
+          const res = await api.get('/procurements');
+          // Flatten items
+          const flatData = res.data.flatMap((p: any) =>
+            p.items.map((item: any) => ({
+              id: item.id,
+              itemName: item.name,
+              qty: item.quantity,
+              estimatedPrice: item.priceEst,
+              total: item.totalEst,
+              status: p.status,
+              requester: p.requester?.fullName || p.requester?.username
+            }))
+          );
+          setData(flatData);
+        } catch (e) {
+          console.error(e);
+          toast.error("Gagal memuat data pengadaan");
+        }
+      };
+      fetchData();
       const fetchSettings = async () => {
         try {
-          const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/settings`);
+          const res = await api.get('/settings');
           const s = res.data;
           if (s) {
             setHeaderData(prev => ({
@@ -95,6 +113,7 @@ export function ProcurementReportButton() {
       </DialogTrigger>
 
       <DialogContent className="w-screen h-screen max-w-none m-0 rounded-none flex flex-col p-0 gap-0 bg-slate-100">
+        <VisuallyHidden><DialogTitle>Laporan Pengadaan</DialogTitle></VisuallyHidden>
         <div className="p-4 border-b bg-white flex justify-between items-center shadow-sm z-10 shrink-0">
           <div>
             <h3 className="font-semibold text-lg flex items-center gap-2">

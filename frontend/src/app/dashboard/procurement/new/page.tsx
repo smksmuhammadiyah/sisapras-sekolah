@@ -42,12 +42,17 @@ export default function NewProcurementPage() {
     return items.reduce((sum, item) => sum + (item.quantity * item.priceEst), 0);
   };
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const handleSubmit = async () => {
     if (!title || items.length === 0) {
       toast.error("Mohon isi judul dan minimal satu barang");
       return;
     }
 
+    if (isSubmitting) return;
+
+    setIsSubmitting(true);
     try {
       await api.post('/procurements', {
         title,
@@ -59,6 +64,7 @@ export default function NewProcurementPage() {
       router.push('/dashboard/procurement');
     } catch (error) {
       toast.error("Gagal mengirim usulan");
+      setIsSubmitting(false);
     }
   };
 
@@ -184,8 +190,8 @@ export default function NewProcurementPage() {
 
         <div className="flex gap-4 w-full md:w-auto">
           <Button variant="outline" className="flex-1 md:flex-none text-black border-white/20 hover:bg-white/10 hover:text-white" onClick={() => router.back()}>Batal</Button>
-          <Button size="lg" className="flex-1 md:flex-none bg-blue-600 hover:bg-blue-700 text-white border-none" onClick={handleSubmit}>
-            <Save className="w-4 h-4 mr-2" /> Kirim Usulan
+          <Button size="lg" className="flex-1 md:flex-none bg-blue-600 hover:bg-blue-700 text-white border-none" onClick={handleSubmit} disabled={isSubmitting}>
+            {isSubmitting ? <span className="animate-spin mr-2">⏳</span> : <Save className="w-4 h-4 mr-2" />} Kirim Usulan
           </Button>
         </div>
       </div>

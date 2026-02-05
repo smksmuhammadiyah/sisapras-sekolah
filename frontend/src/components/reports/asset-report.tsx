@@ -8,18 +8,11 @@ import { Button } from '@/components/ui/button';
 import { Download, Loader2, Printer, Edit, Eye } from 'lucide-react';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import { toast } from 'sonner';
-import axios from 'axios';
+import api from '@/lib/api';
+import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
+import { DialogTitle } from '@radix-ui/react-dialog';
 
-// Mock Data
-const MOCK_ASSETS = [
-  { id: 1, name: "Laptop Lenovo Thinkpad", code: "EL-2024-001", category: "Elektronik", condition: "Baik", room: { name: "Lab Komputer 1" }, purchaseDate: "2024-01-15", price: 15000000 },
-  { id: 2, name: "Proyektor Epson", code: "EL-2023-045", category: "Elektronik", condition: "Rusak Ringan", room: { name: "Ruang Guru" }, purchaseDate: "2023-06-20", price: 8500000 },
-  { id: 3, name: "Meja Guru Jati", code: "FR-2022-012", category: "Furniture", condition: "Baik", room: { name: "Kelas X-A" }, purchaseDate: "2022-03-10", price: 2500000 },
-  { id: 4, name: "AC Daikin 1PK", code: "EL-2023-088", category: "Elektronik", condition: "Perlu Servis", room: { name: "Kantor TU" }, purchaseDate: "2023-09-01", price: 4200000 },
-  { id: 5, name: "Lemari Arsip Besi", code: "FR-2021-005", category: "Furniture", condition: "Baik", room: { name: "Gudang" }, purchaseDate: "2021-11-15", price: 3000000 },
-  { id: 6, name: "Papan Tulis Whiteboard", code: "FR-2024-010", category: "Furniture", condition: "Baik", room: { name: "Kelas X-B" }, purchaseDate: "2024-01-20", price: 750000 },
-  { id: 7, name: "Router Mikrotik", code: "NT-2023-002", category: "Network", condition: "Baik", room: { name: "Server Room" }, purchaseDate: "2023-05-05", price: 3500000 },
-];
+
 
 export function AssetReportButton() {
   const componentRef = useRef<HTMLDivElement>(null);
@@ -41,12 +34,13 @@ export function AssetReportButton() {
   // Load data & settings when dialog opens
   useEffect(() => {
     if (open) {
-      setData(MOCK_ASSETS); // Replace with real asset fetch if ready
+      // Fetch Assets
+      api.get('/assets').then(res => setData(res.data)).catch(console.error);
 
       // Fetch School Settings for Header & Signatures
       const fetchSettings = async () => {
         try {
-          const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/settings`);
+          const res = await api.get('/settings');
           const s = res.data;
           if (s) {
             setHeaderData(prev => ({
@@ -99,6 +93,7 @@ export function AssetReportButton() {
       </DialogTrigger>
 
       <DialogContent className="w-screen h-screen max-w-none m-0 rounded-none flex flex-col p-0 gap-0 bg-slate-100">
+        <VisuallyHidden><DialogTitle>Laporan Aset</DialogTitle></VisuallyHidden>
         <div className="p-4 border-b bg-white flex justify-between items-center shadow-sm z-10 shrink-0">
           <div>
             <h3 className="font-semibold text-lg flex items-center gap-2">

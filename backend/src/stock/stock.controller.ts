@@ -5,6 +5,7 @@ import { CreateStockTransactionDto } from './dto/create-stock-transaction.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
+import { Role } from '@prisma/client';
 
 @Controller('stock')
 @UseGuards(AuthGuard('jwt'))
@@ -13,7 +14,7 @@ export class StockController {
 
   @Post('items')
   @UseGuards(RolesGuard)
-  @Roles('ADMIN', 'STAFF')
+  @Roles(Role.ADMIN, Role.STAFF)
   createItem(@Body() createStockItemDto: CreateStockItemDto) {
     return this.stockService.createItem(createStockItemDto);
   }
@@ -30,14 +31,14 @@ export class StockController {
 
   @Delete('items/:id')
   @UseGuards(RolesGuard)
-  @Roles('ADMIN', 'STAFF')
+  @Roles(Role.ADMIN, Role.STAFF)
   deleteItem(@Param('id') id: string) {
     return this.stockService.deleteItem(id);
   }
 
   @Post('items/:id/transactions')
   @UseGuards(RolesGuard)
-  @Roles('ADMIN', 'STAFF')
+  @Roles(Role.ADMIN, Role.STAFF)
   createTransaction(
     @Request() req,
     @Param('id') id: string,

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateAssetDto } from './dto/create-asset.dto';
 import { Prisma } from '@prisma/client';
@@ -8,17 +8,25 @@ export class AssetsService {
   constructor(private prisma: PrismaService) { }
 
   async create(createAssetDto: CreateAssetDto) {
-    const purchaseYear = new Date(createAssetDto.purchaseDate).getFullYear();
-    const code = await this.generateCode(createAssetDto.category, purchaseYear);
+    const purchaseDate = createAssetDto.purchaseDate ? new Date(createAssetDto.purchaseDate) : new Date();
+    const purchaseYear = isNaN(purchaseDate.getFullYear()) ? new Date().getFullYear() : purchaseDate.getFullYear();
+    const categoryName = createAssetDto.category || 'GEN';
+    const code = await this.generateCode(categoryName, purchaseYear);
 
-    return this.prisma.asset.create({
-      data: {
-        ...createAssetDto,
-        purchaseDate: new Date(createAssetDto.purchaseDate),
-        purchaseYear,
-        code,
-      },
-    });
+
+    try {
+      return await this.prisma.asset.create({
+        data: {
+          ...createAssetDto,
+          purchaseDate: new Date(createAssetDto.purchaseDate),
+          purchaseYear,
+          code,
+        },
+      });
+    } catch (error) {
+      console.error("Asset Create Error:", error);
+      throw new BadRequestException("Asset Create Failed: " + error.message);
+    }
   }
 
   async createBulk(items: CreateAssetDto[]) {

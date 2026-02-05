@@ -68,6 +68,7 @@ export default function Sidebar({
     links.push(
       { href: '/dashboard/staff', label: 'Beranda', icon: LayoutDashboard },
       { href: '/dashboard/audits', label: 'Audit Tugas Saya', icon: ClipboardList },
+      { href: '/dashboard/procurement', label: 'E-Usulan / Pengadaan', icon: ShoppingCart },
       { href: '/dashboard/services', label: 'Perbaikan Aset', icon: Wrench },
       { href: '/dashboard/lending', label: 'Peminjaman Barang', icon: Package },
     );
@@ -93,7 +94,7 @@ export default function Sidebar({
   return (
     <div className={cn("flex h-full w-full flex-col bg-muted/40 transition-all duration-300", isCollapsed && !isMobile ? "items-center" : "")}>
       <div className={cn("flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6", isCollapsed && !isMobile ? "justify-center px-0" : "")}>
-        <Link href="/dashboard" className="flex items-center gap-2 font-semibold">
+        <Link href={user.role === 'ADMIN' ? '/dashboard/admin' : user.role === 'STAFF' ? '/dashboard/staff' : '/dashboard/user'} className="flex items-center gap-2 font-semibold">
           <Box className="h-6 w-6" />
           {(!isCollapsed || isMobile) && <span className="">SIM-SAPRAS</span>}
         </Link>

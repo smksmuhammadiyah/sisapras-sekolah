@@ -62,4 +62,32 @@ export class AnalyticsService {
       }))
     };
   }
+
+  async getUserStats(userId: string) {
+    const [myProposals, approvedProposals, stockAgg] = await Promise.all([
+      this.prisma.procurement.count({ where: { requesterId: userId, deletedAt: null } }),
+      this.prisma.procurement.count({ where: { requesterId: userId, status: 'APPROVED', deletedAt: null } }),
+      this.prisma.stockItem.aggregate({ _sum: { quantity: true } })
+    ]);
+
+    return {
+      myProposals,
+      approvedProposals,
+      itemsInStock: stockAgg._sum.quantity || 0
+    };
+  }
+
+  async getStaffStats() {
+    const [pendingAudits, brokenAssets, upcomingServices] = await Promise.all([
+      this.prisma.audit.count({ where: { status: 'DRAFT' } }),
+      this.prisma.asset.count({ where: { OR: [{ condition: 'BROKEN_LIGHT' }, { condition: 'BROKEN_HEAVY' }] } }),
+      this.prisma.service.count({ where: { date: { gte: new Date() } } })
+    ]);
+
+    return {
+      pendingAudits,
+      brokenAssets,
+      upcomingServices
+    };
+  }
 }

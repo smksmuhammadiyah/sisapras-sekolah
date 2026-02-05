@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException, BadRequestException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, BadRequestException, ConflictException } from '@nestjs/common';
 import { UsersService } from '../users/users.service';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../prisma/prisma.service';
@@ -44,6 +44,7 @@ export class AuthService {
         username: user.username,
         fullName: user.fullName,
         role: user.role,
+        roles: [user.role],
         email: user.email,
       }
     };
@@ -53,7 +54,7 @@ export class AuthService {
     // Check if user exists
     const existing = await this.usersService.findOne(registerDto.username);
     if (existing) {
-      throw new UnauthorizedException('Username already exists');
+      throw new ConflictException('Username already exists');
     }
 
     // Create user (defaults: role=GUEST, isApproved=false)
@@ -64,7 +65,7 @@ export class AuthService {
   }
 
   async changePassword(userId: string, changePasswordDto: any) {
-    const user = await this.usersService.findOne(changePasswordDto.username);
+    const user = await this.usersService.findById(userId);
     if (!user) throw new UnauthorizedException('User not found');
 
     const isValid = await bcrypt.compare(changePasswordDto.currentPassword, user.password);

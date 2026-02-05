@@ -6,13 +6,12 @@ export class NotificationsService {
   constructor(private prisma: PrismaService) { }
 
   async getSummary() {
-    const lowStockCount = await this.prisma.stockItem.count({
-      where: {
-        quantity: {
-          lte: this.prisma.stockItem.fields.minStock,
-        },
-      },
-    });
+    // Prisma doesn't support column-to-column comparison in where clause directly
+    // So we use raw query
+    const lowStockResult = await this.prisma.$queryRaw<{ count: bigint }[]>`
+      SELECT COUNT(*)::int as count FROM "StockItem" WHERE quantity <= "minStock"
+    `;
+    const lowStockCount = Number(lowStockResult[0]?.count || 0);
 
     const pendingProcurementsCount = await this.prisma.procurement.count({
       where: {

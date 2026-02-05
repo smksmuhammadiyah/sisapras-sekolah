@@ -32,3 +32,5 @@ tsconfig.build.tsbuildinfo
 
 # TestSprite
 testsprite_tests/
+scripts/
+server.log

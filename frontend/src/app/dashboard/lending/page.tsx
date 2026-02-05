@@ -19,6 +19,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { QrCode, RotateCcw, Plus, Loader2 } from 'lucide-react';
+import { Html5QrcodeScanner } from 'html5-qrcode';
 import { useAuth } from '@/context/auth-context';
 
 export default function LendingPage() {
@@ -221,10 +222,37 @@ export default function LendingPage() {
                   value={assetCode}
                   onChange={(e) => setAssetCode(e.target.value)}
                 />
-                <Button variant="outline" onClick={handleScanOrSearch}>
-                  <QrCode className="h-4 w-4" />
+                <Button variant="outline" onClick={() => {
+                  const scannerDiv = document.getElementById('reader');
+                  if (scannerDiv) {
+                    // If already open, maybe close? Simple toggle for now
+                    scannerDiv.innerHTML = '';
+                    const scanner = new Html5QrcodeScanner(
+                      "reader",
+                      { fps: 10, qrbox: { width: 250, height: 250 } },
+                        /* verbose= */ false
+                    );
+                    scanner.render((decodedText: string) => {
+                      setAssetCode(decodedText);
+                      // Trigger search automatically
+                      const found = assets.find(a => a.code?.toLowerCase() === decodedText.toLowerCase() || a.id === decodedText);
+                      if (found) {
+                        setSelectedAsset(found);
+                        setConditionBefore(found.condition || 'GOOD');
+                        toast.success(`Aset ditemukan: ${found.name}`);
+                        scanner.clear();
+                      } else {
+                        toast.error('Aset tidak ditemukan di database.');
+                      }
+                    }, (error: any) => {
+                      // console.warn(error);
+                    });
+                  }
+                }}>
+                  <QrCode className="h-4 w-4" /> Scan
                 </Button>
               </div>
+              <div id="reader" className="w-full"></div>
               {selectedAsset && (
                 <div className="text-sm text-green-600 bg-green-50 p-2 rounded">
                   ✓ {selectedAsset.name} ({selectedAsset.code})

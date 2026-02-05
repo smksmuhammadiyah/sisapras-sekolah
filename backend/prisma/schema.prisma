@@ -163,7 +163,7 @@ model StockTransaction {
   notes       String?
   
   stockItemId String
-  stockItem   StockItem            @relation(fields: [stockItemId], references: [id])
+  stockItem   StockItem            @relation(fields: [stockItemId], references: [id], onDelete: Cascade)
   
   userId      String
   user        User                 @relation(fields: [userId], references: [id])
@@ -219,6 +219,9 @@ model SchoolSettings {
   
   sarprasName   String  @default("Wakasek Sarpras, S.Pd")
   nipSarpras    String  @default("19850101 200501 1 001")
+  
+  logoLeft      String? // Base64 or URL
+  logoRight     String? // Base64 or URL
 }
 
 model AcademicYear {
