@@ -149,12 +149,18 @@ export function AssetForm({ initialData }: AssetFormProps) {
     }
   }
 
-  // Debug: log form errors if any
+  // Debug: log form errors and state if any
   useEffect(() => {
+    console.log('--- AssetForm Debug ---');
+    console.log('Is Submitting:', form.formState.isSubmitting);
+    console.log('IsValid:', form.formState.isValid);
+    console.log('Dirty Fields:', form.formState.dirtyFields);
+    console.log('Form Values:', form.getValues());
     if (Object.keys(form.formState.errors).length > 0) {
       console.log('Form validation errors:', form.formState.errors);
     }
-  }, [form.formState.errors]);
+    console.log('-----------------------');
+  }, [form.formState.errors, form.formState.isSubmitting, form.formState.isValid]);
 
   // Generate year options (last 30 years)
   const currentYear = new Date().getFullYear();

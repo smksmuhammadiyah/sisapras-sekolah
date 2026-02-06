@@ -142,10 +142,17 @@ function LendingContent() {
   const resetForm = () => {
     setAssetCode('');
     setSelectedAsset(null);
-    setBorrowerName('');
+    setBorrowerName(user?.fullName || user?.username || '');
     setConditionBefore('GOOD');
     setNotes('');
   };
+
+  // Pre-fill borrower name when dialog opens
+  useEffect(() => {
+    if (isBorrowDialogOpen && !borrowerName) {
+      setBorrowerName(user?.fullName || user?.username || '');
+    }
+  }, [isBorrowDialogOpen, user, borrowerName]);
 
   const openReturnDialog = (lending: any) => {
     setSelectedLending(lending);

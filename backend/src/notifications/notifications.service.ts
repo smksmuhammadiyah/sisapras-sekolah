@@ -3,7 +3,7 @@ import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class NotificationsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) { }
 
   async getSummary() {
     // Prisma doesn't support column-to-column comparison in where clause directly
@@ -19,10 +19,24 @@ export class NotificationsService {
       },
     });
 
+    const unapprovedUsersCount = await this.prisma.user.count({
+      where: {
+        isApproved: false,
+      },
+    });
+
+    const activeLendingsCount = await this.prisma.lending.count({
+      where: {
+        status: 'BORROWED',
+      },
+    });
+
     return {
       lowStock: lowStockCount,
       pendingProcurements: pendingProcurementsCount,
-      total: lowStockCount + pendingProcurementsCount,
+      unapprovedUsers: unapprovedUsersCount,
+      activeLendings: activeLendingsCount,
+      total: lowStockCount + pendingProcurementsCount + unapprovedUsersCount + activeLendingsCount,
     };
   }
 }
