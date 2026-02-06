@@ -3,6 +3,7 @@ import {
   UnauthorizedException,
   BadRequestException,
   ConflictException,
+  Logger,
 } from '@nestjs/common';
 import { UsersService } from '../users/users.service';
 import { JwtService } from '@nestjs/jwt';
@@ -11,6 +12,8 @@ import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
 import { LoginDto } from './dto/login.dto';
 import { MailService } from '../mail/mail.service';
+import { RegisterDto } from './dto/register.dto';
+import { Role } from '@prisma/client';
 
 @Injectable()
 export class AuthService {
@@ -19,7 +22,7 @@ export class AuthService {
     private jwtService: JwtService,
     private mailService: MailService,
     private prisma: PrismaService,
-  ) {}
+  ) { }
 
   async validateUser(username: string, pass: string): Promise<any> {
     const user = await this.usersService.findOne(username);
@@ -55,15 +58,26 @@ export class AuthService {
     };
   }
 
-  async register(registerDto: any) {
+  async register(registerDto: RegisterDto) {
     // Check if user exists
     const existing = await this.usersService.findOne(registerDto.username);
     if (existing) {
       throw new ConflictException('Username already exists');
     }
 
-    // Create user (defaults: role=GUEST, isApproved=false)
-    const newUser = await this.usersService.create(registerDto);
+    // Determine initial role based on jabatan
+    let role: Role = Role.GUEST;
+    if (registerDto.jabatan === 'Siswa') {
+      role = Role.SISWA;
+    } else if (registerDto.jabatan === 'Guru') {
+      role = Role.USER; // Adjust as needed, usually Guru is at least USER or STAFF
+    }
+
+    // Create user (defaults: role=GUEST/SISWA, isApproved=false)
+    const newUser = await this.usersService.create({
+      ...registerDto,
+      role,
+    });
 
     const { password, ...result } = newUser;
     return result;
@@ -125,12 +139,15 @@ export class AuthService {
   }
 
   async resetPassword(token: string, newPassword: string) {
+    const logger = new Logger('AuthService.resetPassword');
+    logger.log(`Starting reset password for token starting with: ${token?.substring(0, 8)}...`);
+
     if (!token || !newPassword) {
       throw new BadRequestException('Token dan password baru wajib diisi');
     }
 
-    // Validate password complexity
-    const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
+    // Validate password complexity (Loosened to allow special characters)
+    const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d).{8,}$/;
     if (!passwordRegex.test(newPassword)) {
       throw new BadRequestException(
         'Password harus minimal 8 karakter, mengandung huruf dan angka.',
@@ -138,6 +155,7 @@ export class AuthService {
     }
 
     // Find valid token
+    logger.log('Querying for valid token...');
     const resetRecord = await this.prisma.passwordReset.findFirst({
       where: {
         token,
@@ -147,39 +165,50 @@ export class AuthService {
     });
 
     if (!resetRecord) {
+      logger.warn(`Invalid or expired token: ${token?.substring(0, 8)}`);
       throw new BadRequestException('Token tidak valid atau sudah kadaluarsa');
     }
+    logger.log(`Token found for email: ${resetRecord.email}`);
 
     // Find user
+    logger.log('Finding user by email...');
     const user = await this.prisma.user.findFirst({
       where: { email: resetRecord.email },
     });
     if (!user) {
+      logger.error(`User not found for existing reset token: ${resetRecord.email}`);
       throw new BadRequestException('User tidak ditemukan');
     }
 
     // Check if new password is same as old password
+    logger.log('Comparing new password with current password...');
     const isSamePassword = await bcrypt.compare(newPassword, user.password);
     if (isSamePassword) {
+      logger.warn('New password is same as current password');
       throw new BadRequestException(
         'Password baru tidak boleh sama dengan password lama.',
       );
     }
 
     // Hash new password
+    logger.log('Hashing new password (start)...');
+    const startHash = Date.now();
     const hashedPassword = await bcrypt.hash(newPassword, 10);
+    logger.log(`Hashing new password (end) - took ${Date.now() - startHash}ms`);
 
     // Update password
-    await this.prisma.user.update({
-      where: { id: user.id },
-      data: { password: hashedPassword },
-    });
-
-    // Mark token as used
-    await this.prisma.passwordReset.update({
-      where: { id: resetRecord.id },
-      data: { used: true },
-    });
+    logger.log('Updating user password in database...');
+    await this.prisma.$transaction([
+      this.prisma.user.update({
+        where: { id: user.id },
+        data: { password: hashedPassword },
+      }),
+      this.prisma.passwordReset.update({
+        where: { id: resetRecord.id },
+        data: { used: true },
+      }),
+    ]);
+    logger.log('Password reset successfully completed and token invalidated');
 
     return {
       message: 'Password berhasil direset. Silakan login dengan password baru.',

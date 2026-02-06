@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import api from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -21,9 +21,19 @@ import { toast } from 'sonner';
 import { QrCode, RotateCcw, Plus, Loader2 } from 'lucide-react';
 import { Html5QrcodeScanner } from 'html5-qrcode';
 import { useAuth } from '@/context/auth-context';
+import { useSearchParams } from 'next/navigation';
 
 export default function LendingPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center text-muted-foreground">Memuat halaman peminjaman...</div>}>
+      <LendingContent />
+    </Suspense>
+  );
+}
+
+function LendingContent() {
   const { user } = useAuth();
+  const searchParams = useSearchParams();
   const [lendings, setLendings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isBorrowDialogOpen, setIsBorrowDialogOpen] = useState(false);
@@ -59,6 +69,19 @@ export default function LendingPage() {
     try {
       const res = await api.get('/assets');
       setAssets(res.data);
+
+      // Auto-open borrow dialog if assetCode is in URL
+      const code = searchParams.get('assetCode');
+      if (code) {
+        setAssetCode(code);
+        const found = res.data.find((a: any) => a.code?.toLowerCase() === code.toLowerCase() || a.id === code);
+        if (found) {
+          setSelectedAsset(found);
+          setConditionBefore(found.condition || 'GOOD');
+          setIsBorrowDialogOpen(true);
+          toast.success(`Aset ditemukan: ${found.name}`);
+        }
+      }
     } catch (e) {
       console.error(e);
     }

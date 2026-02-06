@@ -6,10 +6,11 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import axios from "axios"
 import { useRouter } from "next/navigation"
-import { School, Loader2, ArrowLeft } from "lucide-react"
+import { School, Loader2, ArrowLeft, ChevronDown } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Toaster, toast } from "sonner"
 import Link from "next/link"
@@ -17,6 +18,7 @@ import Link from "next/link"
 const registerSchema = z.object({
   fullName: z.string().min(3, "Nama lengkap minimal 3 karakter"),
   username: z.string().min(4, "Username minimal 4 karakter"),
+  jabatan: z.string().min(1, "Jabatan harus dipilih"),
   password: z.string().min(6, "Password minimal 6 karakter"),
   confirmPassword: z.string()
 }).refine((data) => data.password === data.confirmPassword, {
@@ -31,9 +33,11 @@ export default function RegisterPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
 
-  const { register, handleSubmit, formState: { errors } } = useForm<RegisterFormValues>({
+  const { register, handleSubmit, formState: { errors }, setValue, watch } = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema)
   })
+
+  const selectedJabatan = watch("jabatan")
 
   const onSubmit = async (data: RegisterFormValues) => {
     setIsLoading(true)
@@ -41,7 +45,8 @@ export default function RegisterPage() {
       await axios.post(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/auth/register`, {
         username: data.username,
         password: data.password,
-        fullName: data.fullName
+        fullName: data.fullName,
+        jabatan: data.jabatan
       })
 
       setIsSuccess(true)
@@ -128,6 +133,23 @@ export default function RegisterPage() {
               <Label htmlFor="username">Username</Label>
               <Input id="username" placeholder="username_anda" {...register("username")} disabled={isLoading} />
               {errors.username && <p className="text-xs text-red-500">{errors.username.message}</p>}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="jabatan">Jabatan</Label>
+              <Select
+                onValueChange={(val) => setValue("jabatan", val)}
+                disabled={isLoading}
+              >
+                <SelectTrigger id="jabatan">
+                  <SelectValue placeholder="Pilih jabatan (Guru/Siswa)" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Guru">Guru</SelectItem>
+                  <SelectItem value="Siswa">Siswa</SelectItem>
+                </SelectContent>
+              </Select>
+              {errors.jabatan && <p className="text-xs text-red-500">{errors.jabatan.message}</p>}
             </div>
 
             <div className="grid grid-cols-2 gap-4">

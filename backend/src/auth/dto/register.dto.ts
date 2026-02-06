@@ -13,4 +13,8 @@ export class RegisterDto {
   @IsString()
   @IsOptional()
   fullName?: string;
+
+  @IsString()
+  @IsNotEmpty()
+  jabatan: string;
 }

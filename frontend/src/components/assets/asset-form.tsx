@@ -144,9 +144,17 @@ export function AssetForm({ initialData }: AssetFormProps) {
       }
       router.push('/dashboard/assets');
     } catch (error) {
+      console.error('Asset submission error:', error);
       toast.error('Gagal menyimpan aset');
     }
   }
+
+  // Debug: log form errors if any
+  useEffect(() => {
+    if (Object.keys(form.formState.errors).length > 0) {
+      console.log('Form validation errors:', form.formState.errors);
+    }
+  }, [form.formState.errors]);
 
   // Generate year options (last 30 years)
   const currentYear = new Date().getFullYear();
@@ -154,7 +162,13 @@ export function AssetForm({ initialData }: AssetFormProps) {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 max-w-3xl">
+      <form
+        onSubmit={form.handleSubmit(onSubmit, (errors) => {
+          console.error('Validation errors:', errors);
+          toast.error('Harap periksa kembali form. Ada data yang belum valid atau kosong.');
+        })}
+        className="space-y-6 max-w-3xl"
+      >
         {/* Row 1: Nama & Merk/Spesifikasi */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormField

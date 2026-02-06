@@ -13,8 +13,9 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Plus, Eye } from 'lucide-react';
+import { Plus, Eye, Trash2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { toast } from 'sonner';
 
 export default function AuditListPage() {
   const [audits, setAudits] = useState<any[]>([]);
@@ -40,6 +41,17 @@ export default function AuditListPage() {
       ));
     }
   }, [searchTerm, audits]);
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('Apakah Anda yakin ingin menghapus data audit ini?')) return;
+    try {
+      await api.delete(`/audits/${id}`);
+      setAudits(audits.filter(a => a.id !== id));
+      toast.success('Audit berhasil dihapus');
+    } catch (e) {
+      toast.error('Gagal menghapus audit');
+    }
+  };
 
   return (
     <div className="space-y-6 container mx-auto px-4 md:px-6 py-6 font-sans">
@@ -82,6 +94,9 @@ export default function AuditListPage() {
                     <Link href={`/dashboard/audits/${audit.id}`}>
                       <Eye className="h-4 w-4" />
                     </Link>
+                  </Button>
+                  <Button variant="ghost" size="icon" onClick={() => handleDelete(audit.id)}>
+                    <Trash2 className="h-4 w-4 text-red-500 hover:text-red-700" />
                   </Button>
                 </TableCell>
               </TableRow>

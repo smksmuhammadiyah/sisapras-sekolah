@@ -4,6 +4,7 @@ import {
   Post,
   Body,
   Param,
+  Delete,
   UseGuards,
   Request,
 } from '@nestjs/common';
@@ -14,7 +15,7 @@ import { AuthGuard } from '@nestjs/passport';
 @Controller('audits')
 @UseGuards(AuthGuard('jwt'))
 export class AuditController {
-  constructor(private readonly auditService: AuditService) {}
+  constructor(private readonly auditService: AuditService) { }
 
   @Post()
   create(@Request() req, @Body() createAuditDto: CreateAuditDto) {
@@ -29,5 +30,10 @@ export class AuditController {
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.auditService.findOne(id);
+  }
+
+  @Delete(':id')
+  remove(@Param('id') id: string) {
+    return this.auditService.remove(id);
   }
 }

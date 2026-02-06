@@ -136,7 +136,7 @@ export default function PublicAssetPage() {
             {/* Action for Lending */}
             <div className="pt-4 border-t">
               <a
-                href="/login"
+                href={`/login?assetCode=${asset.code}`}
                 className="block w-full text-center bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-lg font-medium transition-colors"
               >
                 Pinjam Barang Ini

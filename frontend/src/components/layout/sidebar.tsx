@@ -25,7 +25,7 @@ import {
   Building2
 } from 'lucide-react';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 // ... imports are fine at top ...
 
@@ -45,8 +45,13 @@ export default function Sidebar({
   const pathname = usePathname();
   const { user, logout } = useAuth();
   const [isLogoutOpen, setIsLogoutOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
-  if (!user) return null;
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted || !user) return null;
 
   const links: { href: string; label: string; icon: any }[] = [];
 
@@ -72,11 +77,16 @@ export default function Sidebar({
       { href: '/dashboard/services', label: 'Perbaikan Aset', icon: Wrench },
       { href: '/dashboard/lending', label: 'Peminjaman Barang', icon: Package },
     );
-  } else {
+  } else if (user.role === 'USER') {
     links.push(
       { href: '/dashboard/user', label: 'Beranda', icon: LayoutDashboard },
       { href: '/dashboard/procurement', label: 'Usulan Saya', icon: ShoppingCart },
       { href: '/dashboard/stock', label: 'Cek Stok', icon: Package },
+      { href: '/dashboard/lending', label: 'Pinjam Barang', icon: Package },
+    );
+  } else if (user.role === 'SISWA') {
+    links.push(
+      { href: '/dashboard/user', label: 'Beranda', icon: LayoutDashboard },
       { href: '/dashboard/lending', label: 'Pinjam Barang', icon: Package },
     );
   }

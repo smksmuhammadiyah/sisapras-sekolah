@@ -17,7 +17,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 const formSchema = z.object({
   password: z.string()
     .min(8, 'Password minimal 8 karakter')
-    .regex(/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/, 'Password harus mengandung huruf dan angka'),
+    .regex(/^(?=.*[A-Za-z])(?=.*\d).{8,}$/, 'Password harus mengandung huruf dan angka'),
   confirmPassword: z.string(),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Password tidak sama",
@@ -72,7 +72,9 @@ function ResetPasswordContent() {
       setSuccess(true);
       toast.success('Password berhasil direset');
     } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Gagal reset password');
+      console.error('Reset password error:', error.response?.data);
+      const errorMessage = error.response?.data?.message || 'Gagal reset password';
+      toast.error(typeof errorMessage === 'string' ? errorMessage : JSON.stringify(errorMessage));
     } finally {
       setLoading(false);
     }

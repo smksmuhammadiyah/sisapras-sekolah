@@ -8,7 +8,7 @@ export class AuditService {
   constructor(
     private prisma: PrismaService,
     private yearsService: YearsService,
-  ) {}
+  ) { }
 
   async create(auditorId: string, createAuditDto: CreateAuditDto) {
     const activeYear = await this.yearsService.getActiveYear();
@@ -44,6 +44,16 @@ export class AuditService {
     return this.prisma.audit.findUnique({
       where: { id },
       include: { auditor: true, items: { include: { asset: true } } },
+    });
+  }
+
+  async remove(id: string) {
+    // Delete audit items first (Prisma doesn't necessarily cascade if not configured)
+    await this.prisma.auditItem.deleteMany({
+      where: { auditId: id },
+    });
+    return this.prisma.audit.delete({
+      where: { id },
     });
   }
 }

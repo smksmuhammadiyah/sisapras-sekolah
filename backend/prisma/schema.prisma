@@ -12,6 +12,7 @@ enum Role {
   STAFF
   KAPROG
   USER
+  SISWA
   GUEST
 }
 
@@ -50,6 +51,7 @@ model User {
   email      String?  @unique
   password   String
   fullName   String?
+  jabatan    String?
   role       Role     @default(GUEST)
   isApproved Boolean  @default(false)
   isActive   Boolean  @default(true)

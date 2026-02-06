@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { toast } from 'sonner';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import api from '@/lib/api';
 import { useAuth } from '@/context/auth-context';
 import { Box, Eye, EyeOff, Loader2 } from 'lucide-react';
@@ -20,7 +20,16 @@ const formSchema = z.object({
 });
 
 export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="flex min-h-screen items-center justify-center">Loading...</div>}>
+      <LoginContent />
+    </Suspense>
+  );
+}
+
+function LoginContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { login } = useAuth();
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -39,6 +48,12 @@ export default function LoginPage() {
       const res = await api.post('/auth/login', values);
       login(res.data.access_token, res.data.user);
       toast.success('Login successful');
+
+      // Handle redirect if assetCode is present
+      const assetCode = searchParams.get('assetCode');
+      if (assetCode) {
+        router.push(`/dashboard/lending?assetCode=${assetCode}`);
+      }
     } catch (error) {
       console.error(error);
       const isPending = (error as any).response?.data?.message === 'Account pending approval by Admin';

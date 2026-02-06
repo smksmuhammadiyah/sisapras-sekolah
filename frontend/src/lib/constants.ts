@@ -2,6 +2,7 @@ export const ROLE_LABELS: Record<string, string> = {
   ADMIN: 'Wakasek Sarpras',
   STAFF: 'Petugas Sarpras',
   USER: 'Guru / Kaprog',
+  SISWA: 'Siswa',
 };
 
 export const CONTACT_PRESETS = {
