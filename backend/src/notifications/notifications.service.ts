@@ -5,31 +5,43 @@ import { PrismaService } from '../prisma/prisma.service';
 export class NotificationsService {
   constructor(private prisma: PrismaService) { }
 
-  async getSummary() {
-    // Prisma doesn't support column-to-column comparison in where clause directly
-    // So we use raw query
-    const lowStockResult = await this.prisma.$queryRaw<{ count: bigint }[]>`
-      SELECT COUNT(*)::int as count FROM "StockItem" WHERE quantity <= "minStock"
-    `;
-    const lowStockCount = Number(lowStockResult[0]?.count || 0);
+  async getSummary(role: string) {
+    const isAdmin = role === 'ADMIN';
 
-    const pendingProcurementsCount = await this.prisma.procurement.count({
-      where: {
-        status: 'PENDING',
-      },
-    });
+    // Only Admin gets these counts
+    let lowStockCount = 0;
+    let pendingProcurementsCount = 0;
+    let unapprovedUsersCount = 0;
+    let activeLendingsCount = 0;
 
-    const unapprovedUsersCount = await this.prisma.user.count({
-      where: {
-        isApproved: false,
-      },
-    });
+    if (isAdmin) {
+      // 1. Low Stock
+      const lowStockResult = await this.prisma.$queryRaw<{ count: bigint }[]>`
+        SELECT COUNT(*)::int as count FROM "StockItem" WHERE quantity <= "minStock"
+      `;
+      lowStockCount = Number(lowStockResult[0]?.count || 0);
 
-    const activeLendingsCount = await this.prisma.lending.count({
-      where: {
-        status: 'BORROWED',
-      },
-    });
+      // 2. Pending Procurements
+      pendingProcurementsCount = await this.prisma.procurement.count({
+        where: {
+          status: 'PENDING',
+        },
+      });
+
+      // 3. Unapproved Users
+      unapprovedUsersCount = await this.prisma.user.count({
+        where: {
+          isApproved: false,
+        },
+      });
+
+      // 4. Active Lendings (All borrowed items for admin to monitor)
+      activeLendingsCount = await this.prisma.lending.count({
+        where: {
+          status: 'BORROWED',
+        },
+      });
+    }
 
     return {
       lowStock: lowStockCount,

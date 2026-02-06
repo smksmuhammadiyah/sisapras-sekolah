@@ -14,11 +14,19 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { QrCode, RotateCcw, Plus, Loader2 } from 'lucide-react';
+import { QrCode, RotateCcw, Plus, Loader2, Check, MoreVertical, Eye, Trash2 } from 'lucide-react';
 import { Html5QrcodeScanner } from 'html5-qrcode';
 import { useAuth } from '@/context/auth-context';
 import { useSearchParams } from 'next/navigation';
@@ -48,10 +56,17 @@ function LendingContent() {
   const [notes, setNotes] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
+  const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
+
   useEffect(() => {
     loadData();
     loadAssets();
   }, []);
+
+  const openDetailDialog = (lending: any) => {
+    setSelectedLending(lending);
+    setIsDetailDialogOpen(true);
+  };
 
   const loadData = async () => {
     setLoading(true);
@@ -167,77 +182,206 @@ function LendingContent() {
   };
 
   return (
-    <div className="space-y-6 container mx-auto px-4 md:px-6 py-6">
+    <div className="space-y-10">
       <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-        <h1 className="text-3xl font-bold font-heading">Daftar Peminjaman Barang</h1>
-        <Button onClick={() => setIsBorrowDialogOpen(true)}>
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">Peminjaman Barang</h1>
+          <p className="text-muted-foreground">Monitor dan kelola riwayat peminjaman aset sekolah.</p>
+        </div>
+        <Button
+          onClick={() => setIsBorrowDialogOpen(true)}
+          className="rounded-full px-6 shadow-lg shadow-primary/20 hover:scale-105 transition-all duration-300"
+        >
           <Plus className="mr-2 h-4 w-4" /> Pinjam Barang
         </Button>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card>
-          <CardHeader className="pb-2"><CardTitle className="text-sm">Total Peminjaman</CardTitle></CardHeader>
-          <CardContent className="text-2xl font-bold">{lendings.length}</CardContent>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <Card className="border-none shadow-sm hover:shadow-md transition-shadow duration-300 bg-card/50 backdrop-blur-sm">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between pb-2">
+              <div className="p-2 rounded-xl bg-blue-500/10 text-blue-600">
+                <QrCode className="h-5 w-5" />
+              </div>
+              <div className="text-2xl font-bold">{lendings.length}</div>
+            </div>
+            <div className="mt-4">
+              <p className="text-sm font-medium text-muted-foreground">Total Peminjaman</p>
+              <p className="text-xs text-muted-foreground/60">Seluruh riwayat transaksi</p>
+            </div>
+          </CardContent>
         </Card>
-        <Card>
-          <CardHeader className="pb-2"><CardTitle className="text-sm">Sedang Dipinjam</CardTitle></CardHeader>
-          <CardContent className="text-2xl font-bold text-orange-500">{lendings.filter(l => l.status === 'BORROWED').length}</CardContent>
+        <Card className="border-none shadow-sm hover:shadow-md transition-shadow duration-300 bg-card/50 backdrop-blur-sm">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between pb-2">
+              <div className="p-2 rounded-xl bg-orange-500/10 text-orange-600">
+                <RotateCcw className="h-5 w-5" />
+              </div>
+              <div className="text-2xl font-bold text-orange-600">{lendings.filter(l => l.status === 'BORROWED').length}</div>
+            </div>
+            <div className="mt-4">
+              <p className="text-sm font-medium text-muted-foreground">Sedang Dipinjam</p>
+              <p className="text-xs text-muted-foreground/60">Aset belum kembali</p>
+            </div>
+          </CardContent>
         </Card>
-        <Card>
-          <CardHeader className="pb-2"><CardTitle className="text-sm">Sudah Dikembalikan</CardTitle></CardHeader>
-          <CardContent className="text-2xl font-bold text-green-600">{lendings.filter(l => l.status === 'RETURNED').length}</CardContent>
+        <Card className="border-none shadow-sm hover:shadow-md transition-shadow duration-300 bg-card/50 backdrop-blur-sm">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between pb-2">
+              <div className="p-2 rounded-xl bg-green-500/10 text-green-600">
+                <Check className="h-5 w-5" />
+              </div>
+              <div className="text-2xl font-bold text-green-600">{lendings.filter(l => l.status === 'RETURNED').length}</div>
+            </div>
+            <div className="mt-4">
+              <p className="text-sm font-medium text-muted-foreground">Sudah Dikembalikan</p>
+              <p className="text-xs text-muted-foreground/60">Transaksi selesai</p>
+            </div>
+          </CardContent>
         </Card>
       </div>
 
-      {/* Table */}
-      <div className="rounded-md border bg-white dark:bg-slate-950 shadow-sm">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Tanggal/Jam Pinjam</TableHead>
-              <TableHead>Nama Peminjam</TableHead>
-              <TableHead>Nama Barang</TableHead>
-              <TableHead>Kondisi Awal</TableHead>
-              <TableHead>Jam Kembali</TableHead>
-              <TableHead>Kondisi Akhir</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="text-right">Aksi</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {loading ? (
-              <TableRow><TableCell colSpan={8} className="text-center h-24"><Loader2 className="h-6 w-6 animate-spin mx-auto" /></TableCell></TableRow>
-            ) : lendings.length === 0 ? (
-              <TableRow><TableCell colSpan={8} className="text-center h-24 text-muted-foreground">Belum ada data peminjaman.</TableCell></TableRow>
-            ) : (
-              lendings.map((l) => (
-                <TableRow key={l.id}>
-                  <TableCell>{formatDate(l.borrowDate)}</TableCell>
-                  <TableCell className="font-medium">{l.borrowerName}</TableCell>
-                  <TableCell>{l.asset?.name || '-'}</TableCell>
-                  <TableCell><Badge variant="outline">{l.conditionBefore}</Badge></TableCell>
-                  <TableCell>{l.returnDate ? formatDate(l.returnDate) : '-'}</TableCell>
-                  <TableCell>{l.conditionAfter ? <Badge variant="outline">{l.conditionAfter}</Badge> : '-'}</TableCell>
-                  <TableCell>
-                    <Badge variant={l.status === 'BORROWED' ? 'destructive' : 'default'}>
-                      {l.status === 'BORROWED' ? 'Dipinjam' : 'Dikembalikan'}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    {l.status === 'BORROWED' && (
-                      <Button size="sm" variant="outline" onClick={() => openReturnDialog(l)}>
-                        <RotateCcw className="mr-2 h-4 w-4" /> Kembalikan
-                      </Button>
-                    )}
-                  </TableCell>
+      {/* Main Table Card */}
+      <Card className="border-none shadow-xl bg-card/30 backdrop-blur-md overflow-hidden">
+        <CardHeader className="bg-muted/30 pb-6 border-b border-muted/20">
+          <div className="flex justify-between items-center">
+            <div>
+              <CardTitle className="text-xl font-bold">Riwayat Peminjaman</CardTitle>
+              <CardDescription>Menampilkan daftar aktivitas penggunaan aset</CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="p-0">
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader className="bg-muted/10">
+                <TableRow className="hover:bg-transparent border-b border-muted">
+                  <TableHead className="py-4 pl-6 text-xs font-bold uppercase tracking-wider">Tanggal & Waktu</TableHead>
+                  <TableHead className="text-xs font-bold uppercase tracking-wider">Peminjam</TableHead>
+                  <TableHead className="text-xs font-bold uppercase tracking-wider">Aset Barang</TableHead>
+                  <TableHead className="text-xs font-bold uppercase tracking-wider">Kondisi</TableHead>
+                  <TableHead className="text-xs font-bold uppercase tracking-wider">Status</TableHead>
+                  <TableHead className="text-right pr-6 text-xs font-bold uppercase tracking-wider">Aksi</TableHead>
                 </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </div>
+              </TableHeader>
+              <TableBody>
+                {loading ? (
+                  <TableRow><TableCell colSpan={6} className="text-center h-48"><Loader2 className="h-8 w-8 animate-spin mx-auto text-primary" /></TableCell></TableRow>
+                ) : lendings.length === 0 ? (
+                  <TableRow><TableCell colSpan={6} className="text-center h-48 text-muted-foreground italic">Belum ada data peminjaman.</TableCell></TableRow>
+                ) : (
+                  lendings.map((l) => (
+                    <TableRow key={l.id} className="group hover:bg-muted/30 transition-colors duration-200">
+                      <TableCell className="py-4 pl-6">
+                        <div className="flex flex-col">
+                          <span className="font-semibold text-sm">{new Date(l.borrowDate).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
+                          <span className="text-[10px] text-muted-foreground">{new Date(l.borrowDate).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-[10px] text-primary font-bold border border-primary/20">
+                            {l.borrowerName?.charAt(0).toUpperCase()}
+                          </div>
+                          <span className="text-sm font-medium">{l.borrowerName}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex flex-col">
+                          <span className="text-sm font-bold">{l.asset?.name || '-'}</span>
+                          <span className="text-[10px] text-muted-foreground">CODE: {l.asset?.code || '-'}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex flex-col gap-1">
+                          <div className="flex items-center gap-1.5 grayscale opacity-70 scale-90 origin-left">
+                            <span className="text-[8px] font-bold text-muted-foreground">AWAL:</span>
+                            <Badge variant="outline" className="text-[9px] px-1.5 py-0">{l.conditionBefore}</Badge>
+                          </div>
+                          {l.conditionAfter && (
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-[8px] font-bold text-muted-foreground uppercase">AKHIR:</span>
+                              <Badge variant="outline" className="text-[9px] px-1.5 py-0 border-primary text-primary">{l.conditionAfter}</Badge>
+                            </div>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        {l.status === 'BORROWED' ? (
+                          <div className="flex items-center px-2 py-1 bg-orange-500/10 text-orange-600 rounded-full w-fit gap-1.5 border border-orange-500/20">
+                            <span className="h-1.5 w-1.5 rounded-full bg-orange-600 animate-pulse" />
+                            <span className="text-[10px] font-bold uppercase tracking-wider">Dipinjam</span>
+                          </div>
+                        ) : (
+                          <div className="flex items-center px-2 py-1 bg-green-500/10 text-green-600 rounded-full w-fit gap-1.5 border border-green-500/20">
+                            <span className="h-1.5 w-1.5 rounded-full bg-green-600" />
+                            <span className="text-[10px] font-bold uppercase tracking-wider">Kembali</span>
+                          </div>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-right pr-6">
+                        <div className="flex justify-end gap-2">
+                          {l.status === 'BORROWED' && (
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => openReturnDialog(l)}
+                              className="h-8 rounded-lg text-primary hover:bg-primary/10 border border-primary/20"
+                            >
+                              <RotateCcw className="mr-2 h-3.5 w-3.5" />
+                              <span className="text-xs uppercase font-bold text-nowrap">Kembali</span>
+                            </Button>
+                          )}
+
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                                <span className="sr-only">Buka menu</span>
+                                <MoreVertical className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-48">
+                              <DropdownMenuLabel>Aksi</DropdownMenuLabel>
+                              <DropdownMenuItem
+                                className="cursor-pointer"
+                                onSelect={() => openDetailDialog(l)}
+                              >
+                                <Eye className="mr-2 h-4 w-4" /> Detail Peminjaman
+                              </DropdownMenuItem>
+                              {user?.role === 'ADMIN' && (
+                                <>
+                                  <DropdownMenuSeparator />
+                                  <DropdownMenuItem
+                                    className="text-destructive cursor-pointer"
+                                    onSelect={async () => {
+                                      if (confirm('Hapus riwayat peminjaman ini?')) {
+                                        try {
+                                          await api.delete(`/lending/${l.id}`);
+                                          toast.success('Riwayat berhasil dihapus');
+                                          loadData();
+                                        } catch (e) {
+                                          toast.error('Gagal menghapus');
+                                        }
+                                      }
+                                    }}
+                                  >
+                                    <Trash2 className="mr-2 h-4 w-4" /> Hapus Data
+                                  </DropdownMenuItem>
+                                </>
+                              )}
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Borrow Dialog */}
       <Dialog open={isBorrowDialogOpen} onOpenChange={setIsBorrowDialogOpen}>
@@ -354,6 +498,81 @@ function LendingContent() {
               {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Konfirmasi Pengembalian
             </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      {/* Detail Dialog */}
+      <Dialog open={isDetailDialogOpen} onOpenChange={setIsDetailDialogOpen}>
+        <DialogContent className="max-w-md border-none shadow-2xl bg-card/95 backdrop-blur-xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-xl">
+              <Eye className="h-5 w-5 text-primary" /> Detail Transaksi
+            </DialogTitle>
+          </DialogHeader>
+          {selectedLending && (
+            <div className="space-y-6 py-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Aset Barang</span>
+                  <p className="font-semibold text-sm">{selectedLending.asset?.name}</p>
+                  <p className="text-xs text-muted-foreground">{selectedLending.asset?.code}</p>
+                </div>
+                <div className="space-y-1 text-right">
+                  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Status</span>
+                  <div>
+                    <Badge variant={selectedLending.status === 'BORROWED' ? 'destructive' : 'default'} className="text-[10px]">
+                      {selectedLending.status === 'BORROWED' ? 'Sedang Dipinjam' : 'Sudah Kembali'}
+                    </Badge>
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-4 rounded-xl bg-muted/30 border border-muted/50 space-y-3">
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-muted-foreground">Peminjam:</span>
+                  <span className="font-bold">{selectedLending.borrowerName}</span>
+                </div>
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-muted-foreground">Waktu Pinjam:</span>
+                  <span>{formatDate(selectedLending.borrowDate)}</span>
+                </div>
+                {selectedLending.returnDate && (
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-muted-foreground">Waktu Kembali:</span>
+                    <span className="text-primary font-medium">{formatDate(selectedLending.returnDate)}</span>
+                  </div>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider text-center block">Kondisi Fisik</span>
+                <div className="flex justify-around items-center p-3 rounded-xl border border-dashed">
+                  <div className="text-center">
+                    <span className="text-[8px] text-muted-foreground block mb-1">AWAL</span>
+                    <Badge variant="outline" className="font-bold">{selectedLending.conditionBefore}</Badge>
+                  </div>
+                  <div className="h-8 w-px bg-muted mx-2" />
+                  <div className="text-center">
+                    <span className="text-[8px] text-muted-foreground block mb-1">AKHIR</span>
+                    <Badge variant={selectedLending.conditionAfter ? "default" : "outline"} className="font-bold">
+                      {selectedLending.conditionAfter || '-'}
+                    </Badge>
+                  </div>
+                </div>
+              </div>
+
+              {selectedLending.notes && (
+                <div className="space-y-1">
+                  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Catatan</span>
+                  <p className="text-xs p-3 rounded-lg bg-orange-50/50 border border-orange-100 text-orange-800 italic">
+                    "{selectedLending.notes}"
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+          <DialogFooter>
+            <Button onClick={() => setIsDetailDialogOpen(false)} className="w-full rounded-xl">Tutup</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
