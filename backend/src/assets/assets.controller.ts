@@ -15,7 +15,7 @@ import { AuthGuard } from '@nestjs/passport';
 @Controller('assets')
 @UseGuards(AuthGuard('jwt'))
 export class AssetsController {
-  constructor(private readonly assetsService: AssetsService) {}
+  constructor(private readonly assetsService: AssetsService) { }
 
   @Post()
   create(@Body() createAssetDto: CreateAssetDto) {
@@ -40,6 +40,11 @@ export class AssetsController {
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.assetsService.findOne(id);
+  }
+
+  @Patch(':id')
+  update(@Param('id') id: string, @Body() updateAssetDto: any) {
+    return this.assetsService.update(id, updateAssetDto);
   }
 
   @Patch(':id/restore')

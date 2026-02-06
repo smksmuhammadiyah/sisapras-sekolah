@@ -16,7 +16,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <div className={cn("flex-1 flex flex-col min-h-screen transition-all duration-300", isCollapsed ? "md:ml-20" : "md:ml-64")}>
         <Header />
         <main className="flex-1 overflow-y-auto">
-          <div className="container mx-auto p-4 md:p-8 lg:p-12 max-w-[1400px]">
+          {/* Airy Container with Golden Ratio approach to padding */}
+          <div className="mx-auto w-full max-w-[1400px] px-6 py-10 md:px-10 md:py-16 lg:px-16">
             {children}
           </div>
         </main>

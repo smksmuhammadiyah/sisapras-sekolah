@@ -17,11 +17,15 @@ import { Plus, Eye, Edit, Trash } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { RoomImportDialog } from '@/components/rooms/room-import-dialog';
+import { DeleteConfirmDialog } from '@/components/ui/delete-confirm-dialog';
 
 export default function RoomListPage() {
   const [rooms, setRooms] = useState<any[]>([]);
   const [filteredRooms, setFilteredRooms] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [roomToDelete, setRoomToDelete] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     fetchRooms();
@@ -47,9 +51,11 @@ export default function RoomListPage() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Apakah Anda yakin ingin menghapus ruangan ini?')) return;
+  const handleDelete = async () => {
+    if (!roomToDelete) return;
+    setIsDeleting(true);
     try {
+      const id = roomToDelete;
       await api.delete(`/rooms/${id}`);
 
       setRooms(rooms.filter(r => r.id !== id));
@@ -71,8 +77,12 @@ export default function RoomListPage() {
         duration: 5000,
       });
 
+      setIsDeleteDialogOpen(false);
+      setRoomToDelete(null);
     } catch (error) {
       toast.error('Gagal menghapus ruangan');
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -120,7 +130,10 @@ export default function RoomListPage() {
                           <Edit className="h-4 w-4" />
                         </Link>
                       </Button>
-                      <Button variant="ghost" size="icon" className="text-destructive" onClick={() => handleDelete(room.id)}>
+                      <Button variant="ghost" size="icon" className="text-destructive" onClick={() => {
+                        setRoomToDelete(room.id);
+                        setIsDeleteDialogOpen(true);
+                      }}>
                         <Trash className="h-4 w-4" />
                       </Button>
                     </div>
@@ -138,6 +151,15 @@ export default function RoomListPage() {
           </Table>
         </div>
       </div>
+
+      <DeleteConfirmDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+        onConfirm={handleDelete}
+        isLoading={isDeleting}
+        title="Hapus Ruangan?"
+        description="Apakah Anda yakin ingin menghapus ruangan ini? Semua aset di dalamnya akan kehilangan kaitan ruangan."
+      />
     </div>
   );
 }

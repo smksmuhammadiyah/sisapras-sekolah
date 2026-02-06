@@ -18,6 +18,8 @@ import { Badge } from "@/components/ui/badge"
 import { toast } from "sonner"
 import { RoleGuard } from "@/components/auth/role-guard"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { DeleteConfirmDialog } from "@/components/ui/delete-confirm-dialog"
+import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 
 export default function TrashBinPage() {
   const [activeTab, setActiveTab] = useState("assets")
@@ -25,6 +27,11 @@ export default function TrashBinPage() {
   const [loading, setLoading] = useState(false)
   const [restoring, setRestoring] = useState<string | null>(null)
   const [deleting, setDeleting] = useState<string | null>(null)
+
+  // Custom Dialog States
+  const [isRestoreOpen, setIsRestoreOpen] = useState(false)
+  const [isPermanentDeleteOpen, setIsPermanentDeleteOpen] = useState(false)
+  const [pendingItem, setPendingItem] = useState<{ id: string, type: string } | null>(null)
 
   useEffect(() => {
     fetchDeletedItems(activeTab)
@@ -46,16 +53,18 @@ export default function TrashBinPage() {
     }
   }
 
-  const handleRestore = async (id: string, type: string) => {
-    if (!confirm("Apakah Anda yakin ingin mengembalikan item ini?")) return
+  const handleRestore = async () => {
+    if (!pendingItem) return
+    const { id, type } = pendingItem
 
     setRestoring(id)
     try {
       const endpoint = type === 'procurements' ? `/procurements/${id}/restore` : `/${type}/${id}/restore`
       await api.patch(endpoint)
       toast.success("Item berhasil dikembalikan")
-      // Remove from list
       setData(prev => prev.filter(item => item.id !== id))
+      setIsRestoreOpen(false)
+      setPendingItem(null)
     } catch (error) {
       toast.error("Gagal mengembalikan item")
     } finally {
@@ -63,18 +72,19 @@ export default function TrashBinPage() {
     }
   }
 
-  const handlePermanentDelete = async (id: string, type: string) => {
-    if (!confirm("PERHATIAN: Data akan dihapus SELAMANYA dan tidak bisa dikembalikan. Lanjutkan?")) return
+  const handlePermanentDelete = async () => {
+    if (!pendingItem) return
+    const { id, type } = pendingItem
 
     setDeleting(id)
     try {
-      // NOTE: Only assets implemented in backend for now, need to ensure others work or catch error
       const endpoint = type === 'procurements' ? `/procurements/${id}/permanent` : `/${type}/${id}/permanent`
       await api.delete(endpoint)
       toast.success("Item berhasil dihapus permanen")
       setData(prev => prev.filter(item => item.id !== id))
+      setIsPermanentDeleteOpen(false)
+      setPendingItem(null)
     } catch (error) {
-      // toast.error("Gagal menghapus permanen (Fitur mungkin belum aktif untuk tipe ini)")
       console.error(error)
       toast.error("Gagal menghapus item permanen")
     } finally {
@@ -134,7 +144,10 @@ export default function TrashBinPage() {
                   size="sm"
                   variant="outline"
                   className="gap-2 text-green-600 hover:text-green-700 hover:bg-green-50"
-                  onClick={() => handleRestore(item.id, activeTab)}
+                  onClick={() => {
+                    setPendingItem({ id: item.id, type: activeTab })
+                    setIsRestoreOpen(true)
+                  }}
                   disabled={restoring === item.id}
                 >
                   {restoring === item.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArchiveRestore className="h-4 w-4" />}
@@ -143,7 +156,10 @@ export default function TrashBinPage() {
                   size="sm"
                   variant="destructive"
                   className="gap-2"
-                  onClick={() => handlePermanentDelete(item.id, activeTab)}
+                  onClick={() => {
+                    setPendingItem({ id: item.id, type: activeTab })
+                    setIsPermanentDeleteOpen(true)
+                  }}
                   disabled={deleting === item.id}
                 >
                   {deleting === item.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
@@ -202,6 +218,25 @@ export default function TrashBinPage() {
             </Tabs>
           </CardContent>
         </Card>
+
+        <ConfirmDialog
+          open={isRestoreOpen}
+          onOpenChange={setIsRestoreOpen}
+          onConfirm={handleRestore}
+          isLoading={!!restoring}
+          title="Pulihkan Data?"
+          description="Apakah Anda yakin ingin mengembalikan item ini ke daftar aktif?"
+          confirmText="Ya, Pulihkan"
+        />
+
+        <DeleteConfirmDialog
+          open={isPermanentDeleteOpen}
+          onOpenChange={setIsPermanentDeleteOpen}
+          onConfirm={handlePermanentDelete}
+          isLoading={!!deleting}
+          title="HAPUS PERMANEN?"
+          description="PERHATIAN: Tindakan ini tidak bisa dibatalkan. Data akan dihapus selamanya dari database."
+        />
       </div>
     </RoleGuard>
   )

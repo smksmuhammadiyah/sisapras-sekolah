@@ -17,12 +17,16 @@ import { Plus, Eye, Trash } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/context/auth-context';
 import { toast } from 'sonner';
+import { DeleteConfirmDialog } from '@/components/ui/delete-confirm-dialog';
 
 export default function ProcurementListPage() {
   const [procurements, setProcurements] = useState<any[]>([]);
   const [filteredProcurements, setFilteredProcurements] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const { user } = useAuth();
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [procurementToDelete, setProcurementToDelete] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -49,9 +53,11 @@ export default function ProcurementListPage() {
     }
   }, [searchTerm, procurements]);
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Apakah Anda yakin ingin membatalkan/menghapus usulan ini?')) return;
+  const handleDelete = async () => {
+    if (!procurementToDelete) return;
+    setIsDeleting(true);
     try {
+      const id = procurementToDelete;
       await api.delete(`/procurements/${id}`);
 
       setProcurements(procurements.filter(p => p.id !== id));
@@ -72,7 +78,10 @@ export default function ProcurementListPage() {
         },
         duration: 5000,
       });
+      setIsDeleteDialogOpen(false);
+      setProcurementToDelete(null);
     } catch (e) { toast.error("Gagal menghapus"); }
+    finally { setIsDeleting(false); }
   }
 
   return (
@@ -127,7 +136,10 @@ export default function ProcurementListPage() {
                       </Link>
                     </Button>
                     {(user?.role === 'ADMIN' || (user?.id === p.requesterId && p.status === 'PENDING')) && (
-                      <Button variant="ghost" size="icon" className="text-destructive" onClick={() => handleDelete(p.id)}>
+                      <Button variant="ghost" size="icon" className="text-destructive" onClick={() => {
+                        setProcurementToDelete(p.id);
+                        setIsDeleteDialogOpen(true);
+                      }}>
                         <Trash className="h-4 w-4" />
                       </Button>
                     )}
@@ -145,6 +157,15 @@ export default function ProcurementListPage() {
           </TableBody>
         </Table>
       </div>
+
+      <DeleteConfirmDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+        onConfirm={handleDelete}
+        isLoading={isDeleting}
+        title="Batalkan Usulan?"
+        description="Apakah Anda yakin ingin membatalkan atau menghapus usulan ini? Anda masih bisa mengembalikannya dari tempat sampah."
+      />
     </div>
   );
 }

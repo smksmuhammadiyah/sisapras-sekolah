@@ -124,7 +124,8 @@ export function AssetForm({ initialData }: AssetFormProps) {
   };
 
   async function onSubmit(values: z.infer<typeof assetSchema>) {
-    if (form.formState.isSubmitting) return;
+    // Note: react-hook-form handles isSubmitting, we don't need to return early here
+    // as it prevents the first submission attempt.
 
     try {
       // Convert values for API
@@ -133,6 +134,8 @@ export function AssetForm({ initialData }: AssetFormProps) {
         purchaseYear: values.purchaseYear === 'UNKNOWN' ? null : parseInt(values.purchaseYear || '0'),
         price: values.price ? parseFloat(values.price) : null,
       };
+
+      console.log('[AssetForm] Sending payload:', payload);
 
       if (initialData) {
         await api.patch(`/assets/${initialData.id}`, payload);
@@ -143,9 +146,10 @@ export function AssetForm({ initialData }: AssetFormProps) {
         clearStorage();
       }
       router.push('/dashboard/assets');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Asset submission error:', error);
-      toast.error('Gagal menyimpan aset');
+      const msg = error.response?.data?.message || 'Gagal menyimpan aset';
+      toast.error(typeof msg === 'string' ? msg : 'Gagal menyimpan aset');
     }
   }
 

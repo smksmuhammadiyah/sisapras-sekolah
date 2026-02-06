@@ -16,12 +16,16 @@ import {
 import { Plus, ArrowRightLeft, Trash } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/context/auth-context';
+import { DeleteConfirmDialog } from '@/components/ui/delete-confirm-dialog';
 
 export default function StockListPage() {
   const { user } = useAuth();
   const [items, setItems] = useState<any[]>([]);
   const [filteredItems, setFilteredItems] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const isAdminOrStaff = user?.role === 'ADMIN' || user?.role === 'STAFF';
 
@@ -48,14 +52,19 @@ export default function StockListPage() {
     }
   }, [searchTerm, items]);
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Hapus item stok ini? Semua transaksi terkait juga akan dihapus.')) return;
+  const handleDelete = async () => {
+    if (!itemToDelete) return;
+    setIsDeleting(true);
     try {
-      await api.delete(`/stock/items/${id}`);
+      await api.delete(`/stock/items/${itemToDelete}`);
       toast.success('Item berhasil dihapus');
       loadData();
+      setIsDeleteDialogOpen(false);
+      setItemToDelete(null);
     } catch (e) {
       toast.error('Gagal menghapus item');
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -111,7 +120,10 @@ export default function StockListPage() {
                   </TableCell>
                   {isAdminOrStaff && (
                     <TableCell className="text-right">
-                      <Button variant="ghost" size="icon" className="text-destructive" onClick={() => handleDelete(item.id)}>
+                      <Button variant="ghost" size="icon" className="text-destructive" onClick={() => {
+                        setItemToDelete(item.id);
+                        setIsDeleteDialogOpen(true);
+                      }}>
                         <Trash className="h-4 w-4" />
                       </Button>
                     </TableCell>
@@ -129,6 +141,15 @@ export default function StockListPage() {
           </Table>
         </div>
       </div>
+
+      <DeleteConfirmDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+        onConfirm={handleDelete}
+        isLoading={isDeleting}
+        title="Hapus Item Stok?"
+        description="Apakah Anda yakin ingin menghapus item stok ini? Semua data transaksi terkait item ini juga akan dihapus secara permanen."
+      />
     </div>
   );
 }

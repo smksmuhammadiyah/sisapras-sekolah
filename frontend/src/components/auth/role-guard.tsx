@@ -1,5 +1,7 @@
 "use client";
 
+import React from 'react';
+
 import { useAuth } from '@/context/auth-context';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
@@ -12,6 +14,11 @@ interface RoleGuardProps {
 export function RoleGuard({ children, allowedRoles }: RoleGuardProps) {
   const { user, isLoading } = useAuth();
   const router = useRouter();
+  const [hasMounted, setHasMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    setHasMounted(true);
+  }, []);
 
   useEffect(() => {
     if (!isLoading && user) {
@@ -24,7 +31,7 @@ export function RoleGuard({ children, allowedRoles }: RoleGuardProps) {
     }
   }, [user, isLoading, allowedRoles, router]);
 
-  if (isLoading) {
+  if (!hasMounted || isLoading) {
     return <div className="flex h-screen items-center justify-center">Loading...</div>;
   }
 

@@ -65,4 +65,8 @@ export class CreateAssetDto {
   @IsString()
   @IsOptional()
   assetStatus?: string;
+
+  @IsNumber()
+  @IsOptional()
+  purchaseYear?: number;
 }

@@ -30,6 +30,7 @@ import { QrCode, RotateCcw, Plus, Loader2, Check, MoreVertical, Eye, Trash2 } fr
 import { Html5QrcodeScanner } from 'html5-qrcode';
 import { useAuth } from '@/context/auth-context';
 import { useSearchParams } from 'next/navigation';
+import { DeleteConfirmDialog } from '@/components/ui/delete-confirm-dialog';
 
 export default function LendingPage() {
   return (
@@ -55,6 +56,10 @@ function LendingContent() {
   const [conditionAfter, setConditionAfter] = useState('GOOD');
   const [notes, setNotes] = useState('');
   const [submitting, setSubmitting] = useState(false);
+
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [lendingToDelete, setLendingToDelete] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
 
@@ -136,6 +141,22 @@ function LendingContent() {
       toast.error('Gagal mencatat peminjaman');
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!lendingToDelete) return;
+    setIsDeleting(true);
+    try {
+      await api.delete(`/lending/${lendingToDelete}`);
+      toast.success('Riwayat berhasil dihapus');
+      loadData();
+      setIsDeleteDialogOpen(false);
+      setLendingToDelete(null);
+    } catch (e) {
+      toast.error('Gagal menghapus');
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -354,16 +375,9 @@ function LendingContent() {
                                   <DropdownMenuSeparator />
                                   <DropdownMenuItem
                                     className="text-destructive cursor-pointer"
-                                    onSelect={async () => {
-                                      if (confirm('Hapus riwayat peminjaman ini?')) {
-                                        try {
-                                          await api.delete(`/lending/${l.id}`);
-                                          toast.success('Riwayat berhasil dihapus');
-                                          loadData();
-                                        } catch (e) {
-                                          toast.error('Gagal menghapus');
-                                        }
-                                      }
+                                    onSelect={() => {
+                                      setLendingToDelete(l.id);
+                                      setIsDeleteDialogOpen(true);
                                     }}
                                   >
                                     <Trash2 className="mr-2 h-4 w-4" /> Hapus Data
@@ -576,6 +590,14 @@ function LendingContent() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <DeleteConfirmDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+        onConfirm={handleDelete}
+        isLoading={isDeleting}
+        title="Hapus Riwayat Peminjaman?"
+        description="Apakah Anda yakin ingin menghapus riwayat peminjaman ini? Tindakan ini tidak dapat dibatalkan."
+      />
     </div>
   );
 }

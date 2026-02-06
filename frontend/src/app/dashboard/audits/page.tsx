@@ -16,11 +16,15 @@ import {
 import { Plus, Eye, Trash2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
+import { DeleteConfirmDialog } from '@/components/ui/delete-confirm-dialog';
 
 export default function AuditListPage() {
   const [audits, setAudits] = useState<any[]>([]);
   const [filteredAudits, setFilteredAudits] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [auditToDelete, setAuditToDelete] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     api.get('/audits').then(res => {
@@ -42,14 +46,19 @@ export default function AuditListPage() {
     }
   }, [searchTerm, audits]);
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Apakah Anda yakin ingin menghapus data audit ini?')) return;
+  const handleDelete = async () => {
+    if (!auditToDelete) return;
+    setIsDeleting(true);
     try {
-      await api.delete(`/audits/${id}`);
-      setAudits(audits.filter(a => a.id !== id));
+      await api.delete(`/audits/${auditToDelete}`);
+      setAudits(audits.filter(a => a.id !== auditToDelete));
       toast.success('Audit berhasil dihapus');
+      setIsDeleteDialogOpen(false);
+      setAuditToDelete(null);
     } catch (e) {
       toast.error('Gagal menghapus audit');
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -95,7 +104,10 @@ export default function AuditListPage() {
                       <Eye className="h-4 w-4" />
                     </Link>
                   </Button>
-                  <Button variant="ghost" size="icon" onClick={() => handleDelete(audit.id)}>
+                  <Button variant="ghost" size="icon" onClick={() => {
+                    setAuditToDelete(audit.id);
+                    setIsDeleteDialogOpen(true);
+                  }}>
                     <Trash2 className="h-4 w-4 text-red-500 hover:text-red-700" />
                   </Button>
                 </TableCell>
@@ -111,6 +123,15 @@ export default function AuditListPage() {
           </TableBody>
         </Table>
       </div>
+
+      <DeleteConfirmDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+        onConfirm={handleDelete}
+        isLoading={isDeleting}
+        title="Hapus Data Audit?"
+        description="Apakah Anda yakin ingin menghapus data audit ini? Tindakan ini tidak dapat dibatalkan."
+      />
     </div>
   );
 }

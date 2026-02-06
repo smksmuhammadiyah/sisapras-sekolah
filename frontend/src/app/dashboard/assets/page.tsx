@@ -17,6 +17,7 @@ import { Plus, Eye, Edit, Trash } from 'lucide-react';
 import { toast } from 'sonner';
 import { AssetImportDialog } from '@/components/assets/asset-import-dialog';
 import { AssetReportButton } from '@/components/reports/asset-report';
+import { DeleteConfirmDialog } from '@/components/ui/delete-confirm-dialog';
 
 interface Asset {
   id: string;
@@ -36,6 +37,9 @@ export default function AssetListPage() {
   const [assets, setAssets] = useState<Asset[]>([]);
   const [filteredAssets, setFilteredAssets] = useState<Asset[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [assetToDelete, setAssetToDelete] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     fetchAssets();
@@ -60,9 +64,11 @@ export default function AssetListPage() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Apakah Anda yakin ingin menghapus aset ini?')) return;
+  const handleDelete = async () => {
+    if (!assetToDelete) return;
+    setIsDeleting(true);
     try {
+      const id = assetToDelete;
       await api.delete(`/assets/${id}`);
 
       // Optimistic update
@@ -84,9 +90,13 @@ export default function AssetListPage() {
         duration: 5000,
       });
 
+      setIsDeleteDialogOpen(false);
+      setAssetToDelete(null);
     } catch (error) {
       toast.error('Gagal menghapus aset');
       fetchAssets();
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -101,7 +111,7 @@ export default function AssetListPage() {
   };
 
   return (
-    <div className="space-y-6 container mx-auto px-4 md:px-6 py-6 font-sans">
+    <div className="space-y-10 font-sans">
       <div className="flex flex-col md:flex-row items-center justify-between gap-4">
         <h1 className="text-3xl font-bold font-heading text-slate-900 dark:text-slate-100">Data Aset</h1>
         <div className="flex items-center gap-2 w-full md:w-auto">
@@ -157,7 +167,10 @@ export default function AssetListPage() {
                         <Edit className="h-4 w-4" />
                       </Link>
                     </Button>
-                    <Button variant="ghost" size="icon" className="text-destructive" onClick={() => handleDelete(asset.id)}>
+                    <Button variant="ghost" size="icon" className="text-destructive" onClick={() => {
+                      setAssetToDelete(asset.id);
+                      setIsDeleteDialogOpen(true);
+                    }}>
                       <Trash className="h-4 w-4" />
                     </Button>
                   </div>
@@ -174,6 +187,15 @@ export default function AssetListPage() {
           </TableBody>
         </Table>
       </div>
+
+      <DeleteConfirmDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+        onConfirm={handleDelete}
+        isLoading={isDeleting}
+        title="Hapus Aset?"
+        description="Apakah Anda yakin ingin menghapus aset ini? Aset yang dihapus akan masuk ke tempat sampah."
+      />
     </div>
   );
 }
