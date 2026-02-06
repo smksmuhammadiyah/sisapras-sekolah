@@ -15,8 +15,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       </div>
       <div className={cn("flex-1 flex flex-col min-h-screen transition-all duration-300", isCollapsed ? "md:ml-20" : "md:ml-64")}>
         <Header />
-        <main className="flex-1">
-          {children}
+        <main className="flex-1 overflow-y-auto">
+          <div className="container mx-auto p-4 md:p-8 lg:p-12 max-w-[1400px]">
+            {children}
+          </div>
         </main>
       </div>
     </div>

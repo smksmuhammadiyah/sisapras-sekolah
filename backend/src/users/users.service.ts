@@ -5,23 +5,23 @@ import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UsersService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) { }
 
   async findOne(username: string): Promise<User | null> {
-    return this.prisma.user.findUnique({
-      where: { username },
+    return this.prisma.user.findFirst({
+      where: { username, isActive: true },
     });
   }
 
   async findByEmail(email: string): Promise<User | null> {
     return this.prisma.user.findFirst({
-      where: { email },
+      where: { email, isActive: true },
     });
   }
 
   async findById(id: string): Promise<User | null> {
-    return this.prisma.user.findUnique({
-      where: { id },
+    return this.prisma.user.findFirst({
+      where: { id, isActive: true },
     });
   }
 
@@ -37,9 +37,19 @@ export class UsersService {
   }
 
   async findAll(): Promise<User[]> {
-    return this.prisma.user.findMany({
+    // Using a more robust filter that covers NULL, true and excludes renamed users
+    const users = await this.prisma.user.findMany({
+      where: {
+        isActive: { not: false },
+        NOT: {
+          username: { startsWith: 'deleted_' }
+        }
+      },
       orderBy: { createdAt: 'desc' },
     });
+
+    // Additional JS-level filter for absolute certainty
+    return users.filter(u => u.isActive !== false && !u.username.startsWith('deleted_'));
   }
 
   async update(id: string, data: Prisma.UserUpdateInput): Promise<User> {
@@ -47,28 +57,18 @@ export class UsersService {
       const salt = await bcrypt.genSalt();
       data.password = await bcrypt.hash(data.password, salt);
     }
-    console.log(`Prisma updating user ID: ${id} with data:`, data);
     try {
-      const updated = await this.prisma.user.update({
+      return await this.prisma.user.update({
         where: { id },
         data,
       });
-      console.log('Prisma Update Result:', updated);
-      return updated;
     } catch (error) {
-      if (error instanceof Error) {
-        console.error('Prisma Update Error:', error.message);
-      }
-
-      const errCode = (error as { code?: string })?.code;
-      if (errCode) console.error('Error Code:', errCode);
-
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         if (error.code === 'P2002') {
           throw new BadRequestException('Email already exists');
         }
         if (error.code === 'P2025') {
-          throw new BadRequestException('User not found or update failed');
+          throw new BadRequestException('User not found');
         }
       }
       throw error;
@@ -76,50 +76,26 @@ export class UsersService {
   }
 
   async remove(id: string): Promise<any> {
-    // 1. Check for dependencies
-    const user = await this.prisma.user.findUnique({
-      where: { id },
-      include: {
-        _count: {
-          select: {
-            procurements: true,
-            audits: true,
-            stockTransactions: true,
-            lendings: true,
-            reportedServices: true,
-          },
-        },
-      },
-    });
+    try {
+      // 1. Try Hard Delete first (most effective)
+      return await this.prisma.user.delete({
+        where: { id },
+      });
+    } catch (error) {
+      // 2. Fallback to Soft Delete if there are history constraints
+      const user = await this.prisma.user.findUnique({ where: { id } });
+      if (!user) throw new BadRequestException('User not found');
 
-    if (!user) {
-      throw new BadRequestException('User not found');
-    }
-
-    const hasHistory =
-      user._count.procurements > 0 ||
-      user._count.audits > 0 ||
-      user._count.stockTransactions > 0 ||
-      user._count.lendings > 0 ||
-      user._count.reportedServices > 0;
-
-    if (hasHistory) {
-      // Perform Deactivation (Anonymize email/username and set isActive: false)
       const timestamp = Date.now();
       return this.prisma.user.update({
         where: { id },
         data: {
           isActive: false,
           isApproved: false,
-          email: `deleted_${timestamp}_${user.email || 'noemail'}`,
           username: `deleted_${timestamp}_${user.username}`,
+          email: `${timestamp}_del_${user.email || 'noemail'}`,
         },
       });
     }
-
-    // 2. Hard Delete (only if no history)
-    return this.prisma.user.delete({
-      where: { id },
-    });
   }
 }
