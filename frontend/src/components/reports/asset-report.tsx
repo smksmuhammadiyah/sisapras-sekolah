@@ -15,9 +15,14 @@ import { DialogTitle } from '@radix-ui/react-dialog';
 
 
 export function AssetReportButton() {
+  const [mounted, setMounted] = useState(false);
   const componentRef = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState(false);
   const [data, setData] = useState<any[]>([]);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const [headerData, setHeaderData] = useState<ReportHeaderData>({
     province: "PIMPINAN CABANG MUHAMMADIYAH SATUI",
@@ -88,6 +93,14 @@ export function AssetReportButton() {
       render: (row: any) => new Date(row.purchaseDate).toLocaleDateString('id-ID')
     },
   ];
+
+  if (!mounted) {
+    return (
+      <Button variant="outline" className="gap-2">
+        <Printer className="h-4 w-4" /> Preview
+      </Button>
+    );
+  }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>

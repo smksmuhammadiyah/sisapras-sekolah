@@ -5,7 +5,7 @@ import { LendingStatus } from '@prisma/client';
 
 @Injectable()
 export class LendingService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) { }
 
   async create(createLendingDto: CreateLendingDto) {
     return this.prisma.lending.create({
@@ -49,6 +49,22 @@ export class LendingService {
     return this.prisma.lending.findMany({
       where: { assetId },
       include: { borrower: true },
+      orderBy: { borrowDate: 'desc' },
+    });
+  }
+
+  async remove(id: string) {
+    return this.prisma.lending.delete({
+      where: { id },
+    });
+  }
+
+  async findAllForReport() {
+    return this.prisma.lending.findMany({
+      include: {
+        asset: true,
+        borrower: true,
+      },
       orderBy: { borrowDate: 'desc' },
     });
   }

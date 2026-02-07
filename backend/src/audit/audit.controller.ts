@@ -36,4 +36,9 @@ export class AuditController {
   remove(@Param('id') id: string) {
     return this.auditService.remove(id);
   }
+
+  @Get('export/report-data')
+  getReportData() {
+    return this.auditService.findAllForReport();
+  }
 }

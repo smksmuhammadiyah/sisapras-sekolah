@@ -59,10 +59,23 @@ export class SettingsController {
       }
     })
   }))
-  async restoreDatabase(@UploadedFile() file: Express.Multer.File) {
+  async restoreDatabase(@UploadedFile() file: any) {
     if (!file) {
       throw new Error('File tidak ditemukan');
     }
     return this.settingsService.restoreDatabase(file.path);
+  }
+
+  // Report Settings Endpoints
+  @Get('report')
+  getReportSettings() {
+    return this.settingsService.getReportSettings();
+  }
+
+  @Patch('report')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
+  updateReportSettings(@Body() data: any) {
+    return this.settingsService.updateReportSettings(data);
   }
 }

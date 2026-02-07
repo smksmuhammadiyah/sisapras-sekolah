@@ -13,12 +13,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <div className={cn("hidden md:block fixed h-full z-50 transition-all duration-300 border-r bg-white dark:bg-slate-950", isCollapsed ? "w-20" : "w-64")}>
         <Sidebar isCollapsed={isCollapsed} toggleCollapse={() => setIsCollapsed(!isCollapsed)} />
       </div>
-      <div className={cn("flex-1 flex flex-col min-h-screen transition-all duration-300", isCollapsed ? "md:ml-20" : "md:ml-64")}>
+      <div className={cn("flex-1 flex flex-col min-h-screen transition-all duration-300 bg-slate-50/50 dark:bg-slate-900/50", isCollapsed ? "md:ml-20" : "md:ml-64")}>
         <Header />
-        <main className="flex-1 overflow-y-auto">
-          {/* Airy Container with Golden Ratio approach to padding */}
-          <div className="mx-auto w-full max-w-[1400px] px-6 py-10 md:px-10 md:py-16 lg:px-16">
-            {children}
+        <main className="flex-1 overflow-y-auto overflow-x-hidden">
+          {/* Luxurious Centered Container */}
+          <div className="w-full">
+            <div className="mx-auto max-w-[1440px] p-6 md:p-10 lg:p-12">
+              {children}
+            </div>
           </div>
         </main>
       </div>

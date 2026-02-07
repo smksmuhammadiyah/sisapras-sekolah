@@ -90,4 +90,30 @@ export class SettingsService {
       }
     }
   }
+
+  // Report Settings Methods
+  async getReportSettings() {
+    const settings = await this.prisma.reportSettings.findFirst();
+    if (!settings) {
+      // Create default if not exists
+      return this.prisma.reportSettings.create({
+        data: {},
+      });
+    }
+    return settings;
+  }
+
+  async updateReportSettings(data: Prisma.ReportSettingsUpdateInput) {
+    const settings = await this.prisma.reportSettings.findFirst();
+    if (settings) {
+      return this.prisma.reportSettings.update({
+        where: { id: settings.id },
+        data,
+      });
+    } else {
+      return this.prisma.reportSettings.create({
+        data: data as Prisma.ReportSettingsCreateInput,
+      });
+    }
+  }
 }

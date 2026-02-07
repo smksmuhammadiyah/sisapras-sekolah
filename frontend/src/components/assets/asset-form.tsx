@@ -77,6 +77,13 @@ export function AssetForm({ initialData }: AssetFormProps) {
 
   const { clearStorage } = useFormPersist("asset-form-draft", form);
 
+  // Clear localStorage when creating new asset (not editing)
+  useEffect(() => {
+    if (!initialData) {
+      clearStorage();
+    }
+  }, [initialData, clearStorage]);
+
   // Watch for year unknown checkbox
   const purchaseYear = useWatch({ control: form.control, name: 'purchaseYear' });
 

@@ -48,4 +48,9 @@ export class ServicesController {
   findOne(@Param('id') id: string) {
     return this.servicesService.findOne(id);
   }
+
+  @Get('export/report-data')
+  getReportData() {
+    return this.servicesService.findAllForReport();
+  }
 }

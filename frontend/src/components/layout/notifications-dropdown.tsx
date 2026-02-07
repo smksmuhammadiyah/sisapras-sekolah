@@ -41,8 +41,10 @@ export function NotificationsDropdown() {
   });
 
   const isAdmin = user?.role === 'ADMIN';
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     // Load read state from local storage
     const stored = localStorage.getItem('notification_read_counts');
     if (stored) {
@@ -96,6 +98,14 @@ export function NotificationsDropdown() {
 
   // If not admin and no relevant notifications, maybe show nothing or generic message
   // Currently we only have administrative notifications, so non-admins will see "No notifications"
+
+  if (!mounted) {
+    return (
+      <Button variant="ghost" size="icon" className="relative">
+        <Bell className="h-5 w-5" />
+      </Button>
+    );
+  }
 
   return (
     <DropdownMenu>

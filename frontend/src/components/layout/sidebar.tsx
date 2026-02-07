@@ -67,6 +67,7 @@ export default function Sidebar({
       { href: '/dashboard/lending', label: 'Peminjaman Barang', icon: Package },
       { href: '/dashboard/users', label: 'Manajemen User', icon: Users },
       { href: '/dashboard/settings', label: 'Pengaturan Sekolah', icon: Building2 },
+      { href: '/dashboard/settings/reports', label: 'Kop Surat Laporan', icon: FileText },
       { href: '/dashboard/admin/trash', label: 'Tong Sampah', icon: Trash2 },
     );
   } else if (user.role === 'STAFF') {

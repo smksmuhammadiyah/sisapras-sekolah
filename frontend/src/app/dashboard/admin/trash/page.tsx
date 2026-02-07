@@ -175,14 +175,16 @@ export default function TrashBinPage() {
 
   return (
     <RoleGuard allowedRoles={['ADMIN']}>
-      <div className="space-y-6 container mx-auto px-4 md:px-6 py-6 max-w-5xl">
-        <div className="flex items-center gap-4">
-          <div className="p-3 bg-red-100 text-red-600 rounded-lg">
-            <Trash2 className="w-6 h-6" />
-          </div>
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">Tong Sampah (Trash Bin)</h1>
-            <p className="text-muted-foreground">Kelola data yang telah dihapus. Data disini tidak tampil di Dashboard utama.</p>
+      <div className="space-y-12 font-sans">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-8">
+          <div className="flex items-center gap-4">
+            <div className="p-4 bg-red-100 text-red-600 rounded-2xl shadow-sm shadow-red-200">
+              <Trash2 className="w-8 h-8" />
+            </div>
+            <div>
+              <h1 className="text-4xl font-bold tracking-tight text-slate-900 dark:text-slate-100">Tong Sampah</h1>
+              <p className="text-muted-foreground mt-2">Kelola data yang telah dihapus secara aman.</p>
+            </div>
           </div>
         </div>
 

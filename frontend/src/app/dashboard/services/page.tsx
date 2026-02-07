@@ -6,6 +6,7 @@ import api from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { BackButton } from '@/components/ui/back-button';
 import { SearchInput } from '@/components/ui/search-input';
+import { ServiceReportButton } from '@/components/reports/service-report-button';
 import {
   Table,
   TableBody,
@@ -14,7 +15,10 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Plus, Eye, Wrench } from 'lucide-react';
+import { Plus, Eye, Wrench, Clock, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
 
 export default function ServiceListPage() {
   const [services, setServices] = useState<any[]>([]);
@@ -41,65 +45,99 @@ export default function ServiceListPage() {
     }
   }, [searchTerm, services]);
 
+  const getStatusInfo = (status: string) => {
+    switch (status) {
+      case 'COMPLETED':
+        return { label: 'Selesai', color: 'bg-green-500', icon: <CheckCircle2 className="w-4 h-4" />, progress: 100 };
+      case 'IN_PROGRESS':
+        return { label: 'Proses', color: 'bg-blue-500', icon: <Clock className="w-4 h-4 animate-spin-slow" />, progress: 65 };
+      case 'PENDING':
+        return { label: 'Menunggu', color: 'bg-yellow-500', icon: <AlertCircle className="w-4 h-4" />, progress: 15 };
+      default:
+        return { label: 'Selesai', color: 'bg-green-500', icon: <CheckCircle2 className="w-4 h-4" />, progress: 100 };
+    }
+  };
+
   return (
-    <div className="space-y-6 container mx-auto px-4 md:px-6 py-6 font-sans">
-      <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-        <div className="flex items-center gap-4">
-          <BackButton className="hidden md:flex" />
-          <h1 className="text-3xl font-bold font-heading text-slate-800 dark:text-slate-100 flex items-center gap-2">
-            <Wrench className="w-8 h-8 opacity-70" /> Riwayat Perbaikan & Servis
-          </h1>
+    <div className="mx-auto max-w-[1400px] space-y-6 font-sans">
+      <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+        <div className="flex-1 min-w-0">
+          <h1 className="text-3xl font-extrabold tracking-[-0.05em] text-slate-900 dark:text-slate-100 font-heading truncate">Riwayat Servis</h1>
+          <p className="text-slate-500 mt-1 text-sm leading-relaxed max-w-2xl">Log pemeliharaan dan perbaikan aset.</p>
         </div>
-        <div className="flex items-center gap-2 w-full md:w-auto">
-          <SearchInput onSearch={setSearchTerm} className="w-full md:w-64" placeholder="Cari servis..." />
-          <Button asChild className="shadow-lg shadow-blue-500/20">
-            <Link href="/dashboard/services/new">
-              <Plus className="mr-2 h-4 w-4" /> Catat Perbaikan Baru
-            </Link>
-          </Button>
+        <div className="flex flex-col sm:flex-row items-center gap-4 w-full lg:w-auto shrink-0">
+          <SearchInput onSearch={setSearchTerm} className="w-full sm:w-72 h-9 rounded-lg shadow-sm" placeholder="Cari servis..." />
+          <div className="flex items-center gap-2 shrink-0">
+            <ServiceReportButton />
+            <Button asChild size="sm" className="w-full sm:w-auto h-9 rounded-lg px-6 shadow-lg shadow-blue-500/20 font-bold">
+              <Link href="/dashboard/services/new">
+                <Plus className="mr-2 h-4 w-4" /> Catat Perbaikan
+              </Link>
+            </Button>
+          </div>
         </div>
       </div>
 
-      <div className="rounded-xl border shadow-sm bg-white dark:bg-slate-950 overflow-hidden">
+      <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
-          <Table>
-            <TableHeader className="bg-slate-50 dark:bg-slate-900/50">
-              <TableRow>
-                <TableHead>Tanggal</TableHead>
-                <TableHead>Aset</TableHead>
-                <TableHead>Jenis Servis</TableHead>
-                <TableHead>Biaya</TableHead>
-                <TableHead>Teknisi / Vendor</TableHead>
-                <TableHead className="text-right">Aksi</TableHead>
+          <Table className="min-w-[800px]">
+            <TableHeader className="bg-slate-50/50 dark:bg-slate-900/50">
+              <TableRow className="hover:bg-transparent border-slate-100 dark:border-slate-800">
+                <TableHead className="py-3 px-6 text-xs font-bold uppercase tracking-wider">Tanggal & Tipe</TableHead>
+                <TableHead className="text-xs font-bold uppercase tracking-wider">Aset Barang</TableHead>
+                <TableHead className="text-xs font-bold uppercase tracking-wider hidden md:table-cell">Teknisi / Vendor</TableHead>
+                <TableHead className="text-xs font-bold uppercase tracking-wider">Biaya</TableHead>
+                <TableHead className="text-xs font-bold uppercase tracking-wider w-48">Progress</TableHead>
+                <TableHead className="text-right pr-6 text-xs font-bold uppercase tracking-wider">Aksi</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredServices.map((service) => (
-                <TableRow key={service.id} className="hover:bg-slate-50/50 transition-colors">
-                  <TableCell>{new Date(service.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</TableCell>
-                  <TableCell className="font-medium">{service.asset?.name || 'Aset Dihapus'}</TableCell>
-                  <TableCell>
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                      {service.type}
-                    </span>
-                  </TableCell>
-                  <TableCell>{new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(service.cost)}</TableCell>
-                  <TableCell>{service.technician || '-'}</TableCell>
-                  <TableCell className="text-right">
-                    <Button variant="ghost" size="icon" asChild>
-                      <Link href={`/dashboard/services/${service.id}`}>
-                        <Eye className="h-4 w-4 text-slate-500 hover:text-blue-600" />
-                      </Link>
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-              {filteredServices.length === 0 && (
-                <TableRow>
-                  <TableCell colSpan={6} className="text-center h-32 text-muted-foreground">
-                    {searchTerm ? 'Tidak ada data yang cocok dengan pencarian.' : 'Belum ada riwayat perbaikan yang tercatat.'}
-                  </TableCell>
-                </TableRow>
+              {filteredServices.length === 0 ? (
+                <TableRow><TableCell colSpan={6} className="text-center h-40 text-slate-400 italic text-sm">{searchTerm ? 'Pencarian tidak ditemukan...' : 'Belum ada catatan servis.'}</TableCell></TableRow>
+              ) : (
+                filteredServices.map((service) => {
+                  const status = getStatusInfo(service.status || 'COMPLETED');
+                  return (
+                    <TableRow key={service.id} className="group/row transition-all hover:bg-slate-50/50 dark:hover:bg-slate-900/50 border-slate-100 dark:border-slate-800">
+                      <TableCell className="py-3 px-6">
+                        <div className="flex flex-col">
+                          <span className="text-xs font-bold text-slate-500">{new Date(service.date).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
+                          <span className="text-[10px] font-bold text-blue-600 uppercase tracking-tighter">{service.type}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="text-sm font-bold text-slate-900 dark:text-slate-100">{service.asset?.name || 'Aset Dihapus'}</div>
+                        <div className="text-[10px] text-slate-400 font-bold uppercase">{service.asset?.code || '-'}</div>
+                      </TableCell>
+                      <TableCell className="hidden md:table-cell">
+                        <span className="text-sm text-slate-600 dark:text-slate-400">{service.technician || 'Internal'}</span>
+                      </TableCell>
+                      <TableCell>
+                        <span className="text-sm font-bold font-mono text-slate-900 dark:text-slate-100">
+                          {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(service.cost)}
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        <div className="space-y-1.5">
+                          <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-tighter">
+                            <span className={status.color.replace('bg-', 'text-')}>{status.label}</span>
+                            <span>{status.progress}%</span>
+                          </div>
+                          <Progress value={status.progress} className="h-1.5 rounded-full bg-slate-100 dark:bg-slate-900" indicatorClassName={status.color} />
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-right pr-6">
+                        <div className="flex justify-end opacity-0 group-hover/row:opacity-100 transition-opacity">
+                          <Button variant="ghost" size="icon" asChild className="h-8 w-8 rounded-md">
+                            <Link href={`/dashboard/services/${service.id}`}>
+                              <Eye className="h-4 w-4 text-slate-400" />
+                            </Link>
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
               )}
             </TableBody>
           </Table>

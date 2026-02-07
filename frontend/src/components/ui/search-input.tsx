@@ -25,11 +25,11 @@ export function SearchInput({ onSearch, placeholder = "Cari data...", className 
 
   return (
     <div className={`relative ${className}`}>
-      <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
       <Input
         type="search"
         placeholder={placeholder}
-        className="pl-8 bg-white dark:bg-slate-950"
+        className="pl-9 bg-white dark:bg-slate-950"
         value={value}
         onChange={(e) => setValue(e.target.value)}
       />

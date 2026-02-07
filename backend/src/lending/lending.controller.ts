@@ -5,6 +5,7 @@ import {
   Body,
   Param,
   Patch,
+  Delete,
   UseGuards,
   Request,
 } from '@nestjs/common';
@@ -15,7 +16,7 @@ import { AuthGuard } from '@nestjs/passport';
 @Controller('lending')
 @UseGuards(AuthGuard('jwt'))
 export class LendingController {
-  constructor(private readonly lendingService: LendingService) {}
+  constructor(private readonly lendingService: LendingService) { }
 
   @Post()
   create(@Body() createLendingDto: CreateLendingDto) {
@@ -25,6 +26,11 @@ export class LendingController {
   @Get()
   findAll() {
     return this.lendingService.findAll();
+  }
+
+  @Get('export/report-data')
+  getReportData() {
+    return this.lendingService.findAllForReport();
   }
 
   @Get(':id')
@@ -43,5 +49,10 @@ export class LendingController {
     @Body('conditionAfter') conditionAfter: string,
   ) {
     return this.lendingService.returnItem(id, conditionAfter);
+  }
+
+  @Delete(':id')
+  remove(@Param('id') id: string) {
+    return this.lendingService.remove(id);
   }
 }

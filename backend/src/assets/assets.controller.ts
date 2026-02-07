@@ -62,4 +62,9 @@ export class AssetsController {
   permanentRemove(@Param('id') id: string) {
     return this.assetsService.permanentRemove(id);
   }
+
+  @Get('export/report-data')
+  getReportData(@Query() query: any) {
+    return this.assetsService.findAllForReport(query);
+  }
 }

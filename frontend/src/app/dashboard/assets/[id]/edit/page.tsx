@@ -19,7 +19,7 @@ export default function EditAssetPage() {
   if (!asset) return <div className="p-8 text-center text-muted-foreground">Memuat data aset...</div>;
 
   return (
-    <div className="space-y-6 container mx-auto px-4 md:px-6 py-6 font-sans">
+    <div className="space-y-12 font-sans">
       <div className="flex items-center gap-4">
         <BackButton />
         <h1 className="text-3xl font-bold font-heading">Edit Data Aset</h1>

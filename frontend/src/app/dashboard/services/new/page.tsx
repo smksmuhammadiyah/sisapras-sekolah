@@ -28,7 +28,9 @@ export default function NewServicePage() {
   const [assets, setAssets] = useState<any[]>([]);
 
   useEffect(() => {
-    api.get('/assets').then(res => setAssets(res.data)).catch(console.error);
+    api.get('/assets', { params: { limit: 100 } })
+      .then(res => setAssets(res.data.items || []))
+      .catch(console.error);
   }, []);
 
   const form = useForm({
@@ -47,7 +49,7 @@ export default function NewServicePage() {
   }
 
   return (
-    <div className="space-y-6 container mx-auto px-4 md:px-6 py-6 font-sans">
+    <div className="space-y-12 font-sans">
       <div className="flex items-center gap-4">
         <BackButton />
         <h1 className="text-3xl font-bold font-heading">Catat Perbaikan Baru</h1>
@@ -106,7 +108,15 @@ export default function NewServicePage() {
                     <FormItem>
                       <FormLabel>Biaya Perbaikan (Rp)</FormLabel>
                       <FormControl>
-                        <Input type="number" className="h-11" {...field} value={field.value as number} onChange={(e) => field.onChange(e.target.valueAsNumber)} />
+                        <Input
+                          type="number"
+                          className="h-11"
+                          name={field.name}
+                          ref={field.ref}
+                          onBlur={field.onBlur}
+                          value={field.value?.toString() || ''}
+                          onChange={(e) => field.onChange(e.target.value === '' ? 0 : parseFloat(e.target.value))}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>

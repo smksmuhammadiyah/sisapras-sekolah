@@ -241,6 +241,23 @@ enum ProcurementStatus {
   REVIEW_WAKASEK
 }
 
+model ReportSettings {
+  id                String   @id @default(uuid())
+  leftLogoUrl       String?
+  rightLogoUrl      String?
+  schoolName        String   @default("SMKS MUHAMMADIYAH SATUI")
+  branchName        String   @default("MAJELIS PENDIDIKAN DASAR DAN MENENGAH")
+  mainTitle         String   @default("PIMPINAN CABANG MUHAMMADIYAH SATUI")
+  address           String   @default("Jl. KH. Ahmad Dahlan, No.07 Ds. Makmur Jaya, Kec. Satui, Kab. Tanah Bumbu (72275)")
+  contactInfo       String   @default("NSPN : 69772942 NISS : 32215511 03 007 Telp: 081254721126/0852510455 - Email:smk.muhammadiyahsatui@gmail.com")
+  principalName     String?
+  vicePrincipalName String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@map("report_settings")
+}
+
 enum AuditStatus {
   DRAFT
   COMPLETED

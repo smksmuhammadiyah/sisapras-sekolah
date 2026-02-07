@@ -87,13 +87,16 @@ export default function RoomListPage() {
   };
 
   return (
-    <div className="space-y-6 container mx-auto px-4 md:px-6 py-6 font-sans">
-      <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-        <h1 className="text-3xl font-bold font-heading text-slate-900 dark:text-slate-100">Data Ruangan</h1>
-        <div className="flex items-center gap-2 w-full md:w-auto">
-          <SearchInput onSearch={setSearchTerm} className="w-full md:w-64" placeholder="Cari ruangan..." />
+    <div className="space-y-12 font-sans">
+      <div className="flex flex-col md:flex-row items-center justify-between gap-8">
+        <div>
+          <h1 className="text-4xl font-bold tracking-tight text-slate-900 dark:text-slate-100 font-heading">Data Ruangan</h1>
+          <p className="text-muted-foreground mt-2">Daftar ruangan dan lokasi penyimpanan aset sekolah.</p>
+        </div>
+        <div className="flex items-center gap-3 w-full md:w-auto justify-end">
+          <SearchInput onSearch={setSearchTerm} className="w-full md:w-72" placeholder="Cari ruangan..." />
           <RoomImportDialog onSuccess={fetchRooms} />
-          <Button asChild>
+          <Button asChild className="shadow-lg shadow-primary/20 hover:scale-105 transition-all">
             <Link href="/dashboard/rooms/new">
               <Plus className="mr-2 h-4 w-4" /> Tambah Ruangan
             </Link>
@@ -101,65 +104,68 @@ export default function RoomListPage() {
         </div>
       </div>
 
-      <div className="rounded-md border shadow-sm bg-white dark:bg-slate-950 overflow-hidden">
-        <div className="overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Nama Ruangan</TableHead>
-                <TableHead>Tipe</TableHead>
-                <TableHead>Lokasi</TableHead>
-                <TableHead className="text-right">Aksi</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredRooms.map((room) => (
-                <TableRow key={room.id}>
-                  <TableCell className="font-medium">{room.name}</TableCell>
-                  <TableCell>{room.type}</TableCell>
-                  <TableCell>{room.location}</TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex justify-end gap-2">
-                      <Button variant="ghost" size="icon" asChild>
-                        <Link href={`/dashboard/rooms/${room.id}`}>
-                          <Eye className="h-4 w-4" />
-                        </Link>
-                      </Button>
-                      <Button variant="ghost" size="icon" asChild>
-                        <Link href={`/dashboard/rooms/${room.id}/edit`}>
-                          <Edit className="h-4 w-4" />
-                        </Link>
-                      </Button>
-                      <Button variant="ghost" size="icon" className="text-destructive" onClick={() => {
-                        setRoomToDelete(room.id);
-                        setIsDeleteDialogOpen(true);
-                      }}>
-                        <Trash className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-              {filteredRooms.length === 0 && (
-                <TableRow>
-                  <TableCell colSpan={4} className="text-center h-24 text-muted-foreground">
-                    {searchTerm ? 'Tidak ada ruangan yang cocok.' : 'Belum ada data ruangan.'}
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </div>
-      </div>
+      <div className="pt-4">
 
-      <DeleteConfirmDialog
-        open={isDeleteDialogOpen}
-        onOpenChange={setIsDeleteDialogOpen}
-        onConfirm={handleDelete}
-        isLoading={isDeleting}
-        title="Hapus Ruangan?"
-        description="Apakah Anda yakin ingin menghapus ruangan ini? Semua aset di dalamnya akan kehilangan kaitan ruangan."
-      />
+        <div className="rounded-md border shadow-sm bg-white dark:bg-slate-950 overflow-hidden">
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Nama Ruangan</TableHead>
+                  <TableHead>Tipe</TableHead>
+                  <TableHead>Lokasi</TableHead>
+                  <TableHead className="text-right">Aksi</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredRooms.map((room) => (
+                  <TableRow key={room.id}>
+                    <TableCell className="font-medium">{room.name}</TableCell>
+                    <TableCell>{room.type}</TableCell>
+                    <TableCell>{room.location}</TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-2">
+                        <Button variant="ghost" size="icon" asChild>
+                          <Link href={`/dashboard/rooms/${room.id}`}>
+                            <Eye className="h-4 w-4" />
+                          </Link>
+                        </Button>
+                        <Button variant="ghost" size="icon" asChild>
+                          <Link href={`/dashboard/rooms/${room.id}/edit`}>
+                            <Edit className="h-4 w-4" />
+                          </Link>
+                        </Button>
+                        <Button variant="ghost" size="icon" className="text-destructive" onClick={() => {
+                          setRoomToDelete(room.id);
+                          setIsDeleteDialogOpen(true);
+                        }}>
+                          <Trash className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+                {filteredRooms.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={4} className="text-center h-24 text-muted-foreground">
+                      {searchTerm ? 'Tidak ada ruangan yang cocok.' : 'Belum ada data ruangan.'}
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </div>
+
+        <DeleteConfirmDialog
+          open={isDeleteDialogOpen}
+          onOpenChange={setIsDeleteDialogOpen}
+          onConfirm={handleDelete}
+          isLoading={isDeleting}
+          title="Hapus Ruangan?"
+          description="Apakah Anda yakin ingin menghapus ruangan ini? Semua aset di dalamnya akan kehilangan kaitan ruangan."
+        />
+      </div>
     </div>
   );
 }

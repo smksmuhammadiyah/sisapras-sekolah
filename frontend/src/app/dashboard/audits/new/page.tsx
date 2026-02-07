@@ -8,8 +8,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { Trash, CheckCircle } from 'lucide-react';
+import { Trash, CheckCircle, Plus, AlertCircle } from 'lucide-react';
 import { BackButton } from '@/components/ui/back-button';
 
 export default function NewAuditPage() {
@@ -19,7 +20,9 @@ export default function NewAuditPage() {
   const [auditItems, setAuditItems] = useState<any[]>([]);
 
   useEffect(() => {
-    api.get('/assets').then(res => setAssets(res.data)).catch(console.error);
+    api.get('/assets', { params: { limit: 100 } })
+      .then(res => setAssets(res.data.items || []))
+      .catch(console.error);
   }, []);
 
   const addItem = () => {
@@ -75,112 +78,131 @@ export default function NewAuditPage() {
   };
 
   return (
-    <div className="space-y-6 container mx-auto px-4 md:px-6 py-6 pb-20">
-      <div className="flex items-center gap-4">
-        <BackButton />
-        <h1 className="text-3xl font-bold font-heading">Audit / Stock Opname Baru</h1>
+    <div className="mx-auto max-w-[1400px] space-y-6 font-sans">
+      <div className="flex items-center gap-6">
+        <BackButton className="h-9 px-3 border border-slate-200 rounded-lg" />
+        <div>
+          <h1 className="text-2xl font-black tracking-tightest text-slate-900 dark:text-slate-100 font-heading leading-none">Audit Baru</h1>
+          <p className="mt-1 text-sm text-slate-500">Verifikasi fisik inventaris sekolah.</p>
+        </div>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        {/* Left Column: Input Form */}
-        <div className="lg:col-span-1 space-y-6">
-          <Card className="shadow-sm border-blue-100 dark:border-blue-900">
-            <CardHeader className="bg-blue-50/50 dark:bg-blue-900/20">
-              <CardTitle className="text-lg text-blue-800 dark:text-blue-200">Pilih Aset untuk Diaudit</CardTitle>
-            </CardHeader>
-            <CardContent className="pt-6 space-y-4">
+      <div className="grid gap-6 lg:grid-cols-12 items-start">
+        {/* RIGHT Column: Controls */}
+        <div className="lg:col-span-4 space-y-4 order-1 lg:order-2">
+          {/* Instrument Card */}
+          <Card className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 shadow-sm">
+            <div className="p-5 space-y-4">
+              <div className="space-y-1">
+                <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">Instrumen Audit</h3>
+                <p className="text-slate-500 text-xs">Pilih aset untuk diverifikasi.</p>
+              </div>
+
               <div className="space-y-2">
-                <Label>Cari Aset</Label>
+                <Label className="text-xs font-medium text-slate-700 dark:text-slate-300">Pilih Aset</Label>
                 <Select value={selectedAsset} onValueChange={setSelectedAsset}>
-                  <SelectTrigger className="bg-white dark:bg-slate-900">
-                    <SelectValue placeholder="Pilih atau cari kode aset..." />
+                  <SelectTrigger className="h-10 rounded-lg bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-sm">
+                    <SelectValue placeholder="Pilih kode aset..." />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="rounded-lg shadow-xl border-slate-200 dark:border-slate-800">
                     {assets.map(a => (
-                      <SelectItem key={a.id} value={a.id}>{a.code} - {a.name}</SelectItem>
+                      <SelectItem key={a.id} value={a.id} className="text-sm">{a.code} - {a.name}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
-              <Button onClick={addItem} className="w-full bg-blue-600 hover:bg-blue-700">
-                <CheckCircle className="w-4 h-4 mr-2" /> Tambahkan ke Daftar
+
+              <Button onClick={addItem} className="w-full h-10 rounded-lg font-medium shadow-sm">
+                <Plus className="w-4 h-4 mr-2" /> Tambah Item
               </Button>
-            </CardContent>
+            </div>
           </Card>
 
-          <Card className="bg-slate-900 text-white border-0">
-            <CardContent className="p-6">
-              <h3 className="font-bold mb-2">Panduan Audit</h3>
-              <ul className="text-sm text-slate-300 space-y-2 list-disc pl-4">
-                <li>Cek fisik barang secara langsung.</li>
-                <li>Pastikan label QR code masih terbaca.</li>
-                <li>Catat kerusakan sekecil apapun di kolom catatan.</li>
-                <li>Pilih kondisi "Rusak Berat" jika aset tidak bisa dipakai sama sekali.</li>
+          {/* Procedure Card */}
+          <Card className="rounded-xl border border-blue-100 dark:border-blue-900/30 bg-blue-50/50 dark:bg-blue-950/20 shadow-sm">
+            <div className="p-5">
+              <h3 className="text-sm font-bold flex items-center gap-2 mb-4 text-blue-900 dark:text-blue-100">
+                <AlertCircle className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                Prosedur Audit
+              </h3>
+              <ul className="space-y-2.5">
+                {[
+                  "Verifikasi fisik barang",
+                  "Cek label kode aset",
+                  "Identifikasi kerusakan",
+                  "Tambahkan catatan"
+                ].map((step, i) => (
+                  <li key={i} className="flex items-start gap-2.5 text-xs">
+                    <span className="h-5 w-5 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">{i + 1}</span>
+                    <span className="text-slate-700 dark:text-slate-300 leading-relaxed">{step}</span>
+                  </li>
+                ))}
               </ul>
-            </CardContent>
+            </div>
           </Card>
         </div>
 
-        {/* Right Column: List & Actions */}
-        <div className="lg:col-span-2 space-y-6">
-          <h2 className="text-xl font-semibold flex items-center gap-2">
-            Daftar Pengecekan <span className="text-sm font-normal text-muted-foreground">({auditItems.length} aset)</span>
-          </h2>
+        {/* LEFT Column: Checklist */}
+        <div className="lg:col-span-8 space-y-4 order-2 lg:order-1">
+          <div className="flex items-center justify-between px-1">
+            <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">Daftar Verifikasi</h2>
+            <Badge variant="secondary" className="rounded-md text-[10px] font-bold px-2 py-0">
+              {auditItems.length} ITEM
+            </Badge>
+          </div>
 
-          <div className="space-y-4 min-h-[300px]">
+          <div className="space-y-3 min-h-[400px]">
             {auditItems.length === 0 ? (
-              <div className="h-40 border-2 border-dashed rounded-xl flex items-center justify-center text-muted-foreground flex-col gap-2">
-                <p>Belum ada aset yang ditambahkan.</p>
-                <p className="text-sm">Gunakan form di sebelah kiri untuk memulai.</p>
+              <div className="h-60 border-2 border-dashed rounded-xl border-slate-200 dark:border-slate-800 flex items-center justify-center text-slate-300 flex-col gap-3">
+                <CheckCircle className="w-10 h-10 opacity-20" />
+                <p className="text-sm font-bold uppercase tracking-tight opacity-40">Belum Ada Item</p>
               </div>
             ) : (
               auditItems.map((item, index) => (
-                <Card key={item.assetId} className="shadow-sm border-l-4 border-l-blue-500">
-                  <CardContent className="p-4 flex flex-col md:flex-row items-start gap-4">
-                    <div className="flex-1 min-w-[200px]">
-                      <p className="font-mono font-bold text-blue-600 text-xs mb-1">{item.assetCode}</p>
-                      <p className="font-medium text-lg leading-none">{item.assetName}</p>
+                <Card key={item.assetId} className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 p-4 shadow-sm hover:border-blue-200 transition-colors">
+                  <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
+                    <div className="flex-1 min-w-0">
+                      <p className="font-bold text-blue-600 text-[10px] uppercase tracking-wider">{item.assetCode}</p>
+                      <h4 className="font-bold text-base text-slate-900 dark:text-slate-100 truncate">{item.assetName}</h4>
                     </div>
 
-                    <div className="w-full md:w-[180px] space-y-1.5">
-                      <Label className="text-xs text-muted-foreground">Kondisi Fisik</Label>
-                      <Select
-                        value={item.condition}
-                        onValueChange={(v) => updateItem(index, 'condition', v)}
-                      >
-                        <SelectTrigger className="h-9">
+                    <div className="w-full md:w-44 space-y-1">
+                      <Label className="text-[10px] font-bold uppercase text-slate-400">Status Fisik</Label>
+                      <Select value={item.condition} onValueChange={(v) => updateItem(index, 'condition', v)}>
+                        <SelectTrigger className="h-8 rounded-md bg-slate-50 border-slate-200 px-2 text-xs font-bold">
                           <SelectValue />
                         </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="GOOD">Baik / Layak</SelectItem>
-                          <SelectItem value="BROKEN_LIGHT">Rusak Ringan</SelectItem>
-                          <SelectItem value="BROKEN_HEAVY">Rusak Berat</SelectItem>
+                        <SelectContent className="rounded-md border-slate-100">
+                          <SelectItem value="GOOD" className="text-xs font-medium">Baik</SelectItem>
+                          <SelectItem value="BROKEN_LIGHT" className="text-xs font-medium">Rusak Ringan</SelectItem>
+                          <SelectItem value="BROKEN_HEAVY" className="text-xs font-medium">Rusak Berat</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
 
-                    <div className="flex-1 w-full space-y-1.5">
-                      <Label className="text-xs text-muted-foreground">Catatan Temuan</Label>
-                      <Input
-                        value={item.note}
-                        onChange={(e) => updateItem(index, 'note', e.target.value)}
-                        placeholder="Contoh: Kaki meja goyang..."
-                        className="h-9"
-                      />
-                    </div>
-
-                    <Button variant="ghost" size="icon" className="text-slate-400 hover:text-red-500 mt-5 md:mt-0" onClick={() => removeItem(index)}>
-                      <Trash className="h-5 w-5" />
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-300 hover:text-red-500 rounded-md shrink-0 self-end md:self-center" onClick={() => removeItem(index)}>
+                      <Trash className="h-4 w-4" />
                     </Button>
-                  </CardContent>
+                  </div>
+
+                  <div className="mt-3">
+                    <Input
+                      value={item.note}
+                      onChange={(e) => updateItem(index, 'note', e.target.value)}
+                      placeholder="Catatan..."
+                      className="h-8 rounded-md bg-slate-50 border-slate-200 text-xs"
+                    />
+                  </div>
                 </Card>
               ))
             )}
           </div>
 
           {auditItems.length > 0 && (
-            <div className="sticky bottom-6 flex justify-end">
-              <Button size="lg" className="w-full md:w-auto shadow-xl" onClick={handleSubmit}>Selesai & Simpan Audit</Button>
+            <div className="flex justify-end pt-4">
+              <Button size="lg" className="h-12 rounded-xl px-8 shadow-lg shadow-blue-500/20 font-bold" onClick={handleSubmit}>
+                Simpan Laporan Audit
+              </Button>
             </div>
           )}
         </div>

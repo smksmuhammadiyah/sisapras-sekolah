@@ -268,4 +268,27 @@ export class AssetsService {
 
     return finalCode;
   }
+
+  async findAllForReport(query: any) {
+    const { search, category, condition } = query;
+    const where: Prisma.AssetWhereInput = {
+      deletedAt: null,
+      ...(search && {
+        OR: [
+          { name: { contains: search, mode: 'insensitive' } },
+          { code: { contains: search, mode: 'insensitive' } },
+        ],
+      }),
+      ...(category && { category }),
+      ...(condition && { condition }),
+    };
+
+    return this.prisma.asset.findMany({
+      where,
+      include: {
+        room: true,
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
 }

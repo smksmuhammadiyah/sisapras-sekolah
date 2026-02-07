@@ -144,10 +144,10 @@ export default function SettingsPage() {
 
   return (
     <RoleGuard allowedRoles={['ADMIN']}>
-      <div className="space-y-6 max-w-4xl mx-auto pb-12">
+      <div className="space-y-12 font-sans">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Pengaturan Sekolah</h2>
-          <p className="text-muted-foreground">Kelola informasi sekolah dan konfigurasi sistem.</p>
+          <h1 className="text-4xl font-bold tracking-tight text-slate-900 dark:text-slate-100 font-heading">Pengaturan Sekolah</h1>
+          <p className="text-muted-foreground mt-2">Kelola informasi sekolah dan konfigurasi sistem.</p>
         </div>
 
         <Tabs defaultValue="identity" className="w-full">

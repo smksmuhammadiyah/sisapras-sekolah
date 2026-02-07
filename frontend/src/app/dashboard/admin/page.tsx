@@ -36,20 +36,22 @@ export default function AdminDashboard() {
 
   return (
     <RoleGuard allowedRoles={['ADMIN']}>
-      <div className="space-y-12">
-        <h1 className="text-3xl font-bold">Beranda Wakasek Sarpras</h1>
+      <div className="space-y-16">
+        <h1 className="text-4xl font-bold tracking-tight text-slate-900 dark:text-slate-100">Beranda Wakasek Sarpras</h1>
 
-        <QuickStart role="ADMIN" />
+        <div className="space-y-8">
+          <QuickStart role="ADMIN" />
+        </div>
 
-        <div className="mb-6">
+        <div className="space-y-8">
           <HealthStatusWidget />
         </div>
 
-        <div className="pt-4">
+        <div className="pt-8">
           <DashboardCharts />
         </div>
 
-        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4 pt-4">
+        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4 pt-8">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Aset</CardTitle>

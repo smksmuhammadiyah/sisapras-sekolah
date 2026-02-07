@@ -69,19 +69,22 @@ export default function StockListPage() {
   };
 
   return (
-    <div className="space-y-6 container mx-auto px-4 md:px-6 py-6 font-sans">
-      <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-        <h1 className="text-3xl font-bold font-heading text-slate-900 dark:text-slate-100">Stok Habis Pakai</h1>
-        <div className="flex flex-col md:flex-row items-center gap-2 w-full md:w-auto">
-          <SearchInput onSearch={setSearchTerm} className="w-full md:w-64" placeholder="Cari barang..." />
+    <div className="space-y-12 font-sans">
+      <div className="flex flex-col md:flex-row items-center justify-between gap-8">
+        <div>
+          <h1 className="text-4xl font-bold tracking-tight text-slate-900 dark:text-slate-100 font-heading">Stok Habis Pakai</h1>
+          <p className="text-muted-foreground mt-2">Monitor persediaan barang habis pakai sekolah.</p>
+        </div>
+        <div className="flex flex-col md:flex-row items-center gap-3 w-full md:w-auto">
+          <SearchInput onSearch={setSearchTerm} className="w-full md:w-72" placeholder="Cari barang..." />
           {isAdminOrStaff && (
-            <div className="flex gap-2 w-full md:w-auto">
+            <div className="flex items-center gap-2 w-full md:w-auto justify-end">
               <Button variant="outline" asChild className="flex-1 md:flex-none">
                 <Link href="/dashboard/stock/transaction">
                   <ArrowRightLeft className="mr-2 h-4 w-4" /> Transaksi
                 </Link>
               </Button>
-              <Button asChild className="flex-1 md:flex-none">
+              <Button asChild className="flex-1 md:flex-none shadow-lg shadow-primary/20 hover:scale-105 transition-all">
                 <Link href="/dashboard/stock/new">
                   <Plus className="mr-2 h-4 w-4" /> Item Baru
                 </Link>
@@ -91,65 +94,68 @@ export default function StockListPage() {
         </div>
       </div>
 
-      <div className="rounded-md border shadow-sm bg-white dark:bg-slate-950 overflow-hidden">
-        <div className="overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Nama Barang</TableHead>
-                <TableHead>Satuan</TableHead>
-                <TableHead>Stok Min.</TableHead>
-                <TableHead>Qty Saat Ini</TableHead>
-                <TableHead>Status</TableHead>
-                {isAdminOrStaff && <TableHead className="text-right">Aksi</TableHead>}
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredItems.map((item) => (
-                <TableRow key={item.id}>
-                  <TableCell className="font-medium">{item.name}</TableCell>
-                  <TableCell>{item.unit}</TableCell>
-                  <TableCell>{item.minStock}</TableCell>
-                  <TableCell className="font-bold">{item.quantity}</TableCell>
-                  <TableCell>
-                    {item.quantity <= item.minStock ? (
-                      <span className="text-destructive font-semibold">Stok Menipis</span>
-                    ) : (
-                      <span className="text-green-600">Aman</span>
-                    )}
-                  </TableCell>
-                  {isAdminOrStaff && (
-                    <TableCell className="text-right">
-                      <Button variant="ghost" size="icon" className="text-destructive" onClick={() => {
-                        setItemToDelete(item.id);
-                        setIsDeleteDialogOpen(true);
-                      }}>
-                        <Trash className="h-4 w-4" />
-                      </Button>
-                    </TableCell>
-                  )}
-                </TableRow>
-              ))}
-              {filteredItems.length === 0 && (
-                <TableRow>
-                  <TableCell colSpan={isAdminOrStaff ? 6 : 5} className="text-center h-24 text-muted-foreground">
-                    {searchTerm ? 'Tidak ada barang yang cocok.' : 'Belum ada data barang.'}
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </div>
-      </div>
+      <div className="pt-4">
 
-      <DeleteConfirmDialog
-        open={isDeleteDialogOpen}
-        onOpenChange={setIsDeleteDialogOpen}
-        onConfirm={handleDelete}
-        isLoading={isDeleting}
-        title="Hapus Item Stok?"
-        description="Apakah Anda yakin ingin menghapus item stok ini? Semua data transaksi terkait item ini juga akan dihapus secara permanen."
-      />
+        <div className="rounded-md border shadow-sm bg-white dark:bg-slate-950 overflow-hidden">
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Nama Barang</TableHead>
+                  <TableHead>Satuan</TableHead>
+                  <TableHead>Stok Min.</TableHead>
+                  <TableHead>Qty Saat Ini</TableHead>
+                  <TableHead>Status</TableHead>
+                  {isAdminOrStaff && <TableHead className="text-right">Aksi</TableHead>}
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredItems.map((item) => (
+                  <TableRow key={item.id}>
+                    <TableCell className="font-medium">{item.name}</TableCell>
+                    <TableCell>{item.unit}</TableCell>
+                    <TableCell>{item.minStock}</TableCell>
+                    <TableCell className="font-bold">{item.quantity}</TableCell>
+                    <TableCell>
+                      {item.quantity <= item.minStock ? (
+                        <span className="text-destructive font-semibold">Stok Menipis</span>
+                      ) : (
+                        <span className="text-green-600">Aman</span>
+                      )}
+                    </TableCell>
+                    {isAdminOrStaff && (
+                      <TableCell className="text-right">
+                        <Button variant="ghost" size="icon" className="text-destructive" onClick={() => {
+                          setItemToDelete(item.id);
+                          setIsDeleteDialogOpen(true);
+                        }}>
+                          <Trash className="h-4 w-4" />
+                        </Button>
+                      </TableCell>
+                    )}
+                  </TableRow>
+                ))}
+                {filteredItems.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={isAdminOrStaff ? 6 : 5} className="text-center h-24 text-muted-foreground">
+                      {searchTerm ? 'Tidak ada barang yang cocok.' : 'Belum ada data barang.'}
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </div>
+
+        <DeleteConfirmDialog
+          open={isDeleteDialogOpen}
+          onOpenChange={setIsDeleteDialogOpen}
+          onConfirm={handleDelete}
+          isLoading={isDeleting}
+          title="Hapus Item Stok?"
+          description="Apakah Anda yakin ingin menghapus item stok ini? Semua data transaksi terkait item ini juga akan dihapus secara permanen."
+        />
+      </div>
     </div>
   );
 }

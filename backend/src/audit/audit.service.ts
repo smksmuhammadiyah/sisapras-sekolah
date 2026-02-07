@@ -56,4 +56,17 @@ export class AuditService {
       where: { id },
     });
   }
+
+  async findAllForReport() {
+    return this.prisma.audit.findMany({
+      include: {
+        auditor: true,
+        academicYear: true,
+        items: {
+          include: { asset: true },
+        },
+      },
+      orderBy: { date: 'desc' },
+    });
+  }
 }

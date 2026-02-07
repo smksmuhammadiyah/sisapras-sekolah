@@ -13,9 +13,11 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { Plus, Eye, Edit, Trash, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { AssetReportButton } from '@/components/reports/asset-report';
+import { AssetReportButton } from '@/components/reports/asset-report-button';
 import { DeleteConfirmDialog } from '@/components/ui/delete-confirm-dialog';
 import dynamic from 'next/dynamic';
 
@@ -133,113 +135,131 @@ export default function AssetListPage() {
   };
 
   return (
-    <div className="space-y-10 font-sans">
-      <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-        <h1 className="text-3xl font-bold font-heading text-slate-900 dark:text-slate-100">Data Aset</h1>
-        <div className="flex items-center gap-2 w-full md:w-auto">
-          <SearchInput onSearch={setSearchTerm} className="w-full md:w-64" placeholder="Cari aset..." />
-          <AssetReportButton />
-          <AssetImportDialog onSuccess={() => fetchAssets(page, searchTerm)} />
-          <Button asChild>
-            <Link href="/dashboard/assets/new">
-              <Plus className="mr-2 h-4 w-4" /> Tambah Aset
-            </Link>
-          </Button>
+    <div className="mx-auto max-w-[1400px] space-y-6 font-sans">
+      <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+        <div className="flex-1 min-w-0">
+          <h1 className="text-3xl font-extrabold tracking-[-0.05em] text-slate-900 dark:text-slate-100 font-heading truncate">Data Aset</h1>
+          <p className="text-slate-500 mt-1 text-sm leading-relaxed max-w-2xl">Kelola dan pantau inventaris sekolah secara real-time.</p>
+        </div>
+        <div className="flex flex-col sm:flex-row items-center gap-4 w-full lg:w-auto shrink-0">
+          <SearchInput onSearch={setSearchTerm} className="w-full sm:w-72 h-9 rounded-lg shadow-sm" placeholder="Cari aset..." />
+          <div className="flex items-center gap-2 shrink-0">
+            <AssetReportButton />
+            <AssetImportDialog onSuccess={() => fetchAssets(page, searchTerm)} />
+            <Button asChild size="sm" className="rounded-lg px-4 h-9 shadow-lg shadow-primary/20 font-bold">
+              <Link href="/dashboard/assets/new">
+                <Plus className="mr-2 h-4 w-4" /> Tambah Aset
+              </Link>
+            </Button>
+          </div>
         </div>
       </div>
 
-      <div className="rounded-md border shadow-sm bg-white dark:bg-slate-950 overflow-x-auto relative">
-        {isLoading && (
-          <div className="absolute inset-0 bg-white/50 dark:bg-slate-950/50 flex items-center justify-center z-10 backdrop-blur-[1px]">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 shadow-sm overflow-hidden">
+        <div className="overflow-x-auto">
+          <Table className="min-w-[800px]">
+            <TableHeader className="bg-slate-50/50 dark:bg-slate-900/50">
+              <TableRow className="hover:bg-transparent border-slate-100 dark:border-slate-800">
+                <TableHead className="py-3 px-6 text-xs font-bold uppercase tracking-wider">Aset & Kode</TableHead>
+                <TableHead className="text-xs font-bold uppercase tracking-wider hidden md:table-cell">Kategori / Merek</TableHead>
+                <TableHead className="text-xs font-bold uppercase tracking-wider">Ruangan</TableHead>
+                <TableHead className="text-xs font-bold uppercase tracking-wider">Kondisi</TableHead>
+                <TableHead className="text-xs font-bold uppercase tracking-wider hidden lg:table-cell">Status</TableHead>
+                <TableHead className="text-right pr-6 text-xs font-bold uppercase tracking-wider">Aksi</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {isLoading && assets.length === 0 ? (
+                <TableRow><TableCell colSpan={6} className="text-center h-40"><Loader2 className="h-8 w-8 animate-spin mx-auto text-primary opacity-20" /></TableCell></TableRow>
+              ) : assets.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={6} className="text-center h-40 text-slate-400 font-medium italic">
+                    {searchTerm ? 'Pencarian tidak membuahkan hasil...' : 'Belum ada data aset.'}
+                  </TableCell>
+                </TableRow>
+              ) : (
+                assets.map((asset) => (
+                  <TableRow key={asset.id} className="group/row transition-all hover:bg-slate-50/50 dark:hover:bg-slate-900/50 border-slate-100 dark:border-slate-800">
+                    <TableCell className="py-3 px-6">
+                      <div className="flex flex-col">
+                        <span className="text-sm font-bold text-slate-900 dark:text-slate-100">{asset.name}</span>
+                        <span className="text-[10px] font-medium text-slate-400 uppercase tracking-wider">{asset.code}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell className="hidden md:table-cell">
+                      <div className="flex flex-col">
+                        <span className="text-sm text-slate-700 dark:text-slate-300">{asset.category}</span>
+                        <span className="text-[10px] text-slate-400 font-medium uppercase">{asset.brand || '-'}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <span className="text-sm text-slate-600 dark:text-slate-400">{asset.room?.name || 'N/A'}</span>
+                    </TableCell>
+                    <TableCell>
+                      <div className="scale-90 origin-left">
+                        {getConditionBadge(asset.condition)}
+                      </div>
+                    </TableCell>
+                    <TableCell className="hidden lg:table-cell">
+                      <Badge variant="outline" className="rounded-md px-2 py-0 text-[10px] font-bold uppercase border-slate-200 text-slate-500">
+                        {asset.assetStatus || 'Aktif'}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right pr-6">
+                      <div className="flex justify-end gap-1 opacity-0 group-hover/row:opacity-100 transition-opacity">
+                        <Button variant="ghost" size="icon" asChild className="h-8 w-8 rounded-md">
+                          <Link href={`/dashboard/assets/${asset.id}`}>
+                            <Eye className="h-4 w-4 text-slate-400" />
+                          </Link>
+                        </Button>
+                        <Button variant="ghost" size="icon" asChild className="h-8 w-8 rounded-md">
+                          <Link href={`/dashboard/assets/${asset.id}/edit`}>
+                            <Edit className="h-4 w-4 text-slate-400" />
+                          </Link>
+                        </Button>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-md text-destructive" onClick={() => {
+                          setAssetToDelete(asset.id);
+                          setIsDeleteDialogOpen(true);
+                        }}>
+                          <Trash className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </div>
+
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between px-6 py-4 bg-slate-50/50 dark:bg-slate-900/50 border-t border-slate-100 dark:border-slate-800">
+            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+              Hal {page} / {totalPages}
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 text-xs px-3"
+                onClick={() => setPage(p => Math.max(1, p - 1))}
+                disabled={page === 1 || isLoading}
+              >
+                Prev
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 text-xs px-3"
+                onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                disabled={page === totalPages || isLoading}
+              >
+                Next
+              </Button>
+            </div>
           </div>
         )}
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Kode</TableHead>
-              <TableHead>Nama Aset</TableHead>
-              <TableHead>Merk/Spec</TableHead>
-              <TableHead>Kategori</TableHead>
-              <TableHead>Asal</TableHead>
-              <TableHead>Tahun</TableHead>
-              <TableHead>Lokasi</TableHead>
-              <TableHead>Kondisi</TableHead>
-              <TableHead className="text-right">Aksi</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredAssets.map((asset) => (
-              <TableRow key={asset.id}>
-                <TableCell className="font-mono text-xs">{asset.code}</TableCell>
-                <TableCell className="font-medium">
-                  <div>{asset.name}</div>
-                  {asset.assetStatus && <div className="text-[10px] text-muted-foreground uppercase">{asset.assetStatus}</div>}
-                </TableCell>
-                <TableCell>{asset.brand || '-'}</TableCell>
-                <TableCell>{asset.category}</TableCell>
-                <TableCell>{asset.origin || '-'}</TableCell>
-                <TableCell>{asset.purchaseYear || (asset.assetStatus === 'Hasil Pemutihan' ? 'Pemutihan' : '-')}</TableCell>
-                <TableCell>{asset.room?.name || '-'}</TableCell>
-                <TableCell>{getConditionBadge(asset.condition)}</TableCell>
-                <TableCell className="text-right">
-                  <div className="flex justify-end gap-2">
-                    <Button variant="ghost" size="icon" asChild>
-                      <Link href={`/dashboard/assets/${asset.id}`}>
-                        <Eye className="h-4 w-4" />
-                      </Link>
-                    </Button>
-                    <Button variant="ghost" size="icon" asChild>
-                      <Link href={`/dashboard/assets/${asset.id}/edit`}>
-                        <Edit className="h-4 w-4" />
-                      </Link>
-                    </Button>
-                    <Button variant="ghost" size="icon" className="text-destructive" onClick={() => {
-                      setAssetToDelete(asset.id);
-                      setIsDeleteDialogOpen(true);
-                    }}>
-                      <Trash className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
-            {filteredAssets.length === 0 && !isLoading && (
-              <TableRow>
-                <TableCell colSpan={9} className="text-center h-24 text-muted-foreground">
-                  {searchTerm ? 'Tidak ada aset yang cocok dengan pencarian.' : 'Belum ada data aset.'}
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
       </div>
-
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between px-2 py-4">
-          <div className="text-sm text-muted-foreground">
-            Halaman {page} dari {totalPages}
-          </div>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setPage(p => Math.max(1, p - 1))}
-              disabled={page === 1 || isLoading}
-            >
-              Sebelumnya
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-              disabled={page === totalPages || isLoading}
-            >
-              Selanjutnya
-            </Button>
-          </div>
-        </div>
-      )}
 
       <DeleteConfirmDialog
         open={isDeleteDialogOpen}

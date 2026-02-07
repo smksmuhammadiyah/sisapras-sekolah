@@ -8,7 +8,7 @@ export class ServicesService {
   constructor(
     private prisma: PrismaService,
     private yearsService: YearsService,
-  ) {}
+  ) { }
 
   async create(reportedById: string, createServiceDto: CreateServiceDto) {
     const activeYear = await this.yearsService.getActiveYear();
@@ -33,6 +33,13 @@ export class ServicesService {
     return this.prisma.service.findUnique({
       where: { id },
       include: { asset: true, reportedBy: true },
+    });
+  }
+
+  async findAllForReport() {
+    return this.prisma.service.findMany({
+      include: { asset: true, reportedBy: true, academicYear: true },
+      orderBy: { date: 'desc' },
     });
   }
 }

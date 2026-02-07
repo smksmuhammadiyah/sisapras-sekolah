@@ -119,8 +119,38 @@
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
+  }
+
+  /* Enhanced Table Spacing for Airy Look */
+  table th {
+    @apply py-5 px-8 text-sm font-semibold uppercase tracking-wider text-slate-500 bg-slate-50/50 dark:bg-slate-900/50;
+  }
+
+  table td {
+    @apply py-6 px-8 text-sm;
+  }
+
+  /* Typography Hierarchy */
+  h1,
+  .h1 {
+    @apply tracking-[-0.05em] font-extrabold;
+  }
+
+  h2,
+  .h2 {
+    @apply tracking-tight font-bold;
+  }
+
+  .description {
+    @apply leading-relaxed text-muted-foreground;
+  }
+
+  /* Card Hover Effects */
+  .card {
+    @apply transition-all duration-300 hover:shadow-lg hover:shadow-slate-200/50 dark:hover:shadow-none border-slate-200/60 dark:border-slate-800;
   }
 }
 
