@@ -26,11 +26,16 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { QrCode, RotateCcw, Plus, Loader2, Check, MoreVertical, Eye, Trash2 } from 'lucide-react';
-import { Html5QrcodeScanner } from 'html5-qrcode';
+import { QrCode, RotateCcw, Plus, Loader2, Check, MoreVertical, Eye, Trash2, X } from 'lucide-react';
 import { useAuth } from '@/context/auth-context';
 import { useSearchParams } from 'next/navigation';
 import { DeleteConfirmDialog } from '@/components/ui/delete-confirm-dialog';
+import dynamic from 'next/dynamic';
+
+const QRScanner = dynamic(() => import('@/components/ui/qr-scanner').then(mod => mod.QRScanner), {
+  loading: () => <div className="h-[250px] flex items-center justify-center bg-muted animate-pulse rounded-lg">Memuat Scanner...</div>,
+  ssr: false
+});
 
 export default function LendingPage() {
   return (
@@ -49,13 +54,14 @@ function LendingContent() {
   const [isReturnDialogOpen, setIsReturnDialogOpen] = useState(false);
   const [selectedLending, setSelectedLending] = useState<any>(null);
   const [assetCode, setAssetCode] = useState('');
-  const [assets, setAssets] = useState<any[]>([]);
   const [selectedAsset, setSelectedAsset] = useState<any>(null);
+  const [isScannerOpen, setIsScannerOpen] = useState(false);
   const [borrowerName, setBorrowerName] = useState('');
   const [conditionBefore, setConditionBefore] = useState('GOOD');
   const [conditionAfter, setConditionAfter] = useState('GOOD');
   const [notes, setNotes] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [searchingAsset, setSearchingAsset] = useState(false);
 
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [lendingToDelete, setLendingToDelete] = useState<string | null>(null);
@@ -65,13 +71,14 @@ function LendingContent() {
 
   useEffect(() => {
     loadData();
-    loadAssets();
-  }, []);
 
-  const openDetailDialog = (lending: any) => {
-    setSelectedLending(lending);
-    setIsDetailDialogOpen(true);
-  };
+    // Check for initial assetCode in URL
+    const code = searchParams.get('assetCode');
+    if (code) {
+      setAssetCode(code);
+      handleSearchAsset(code);
+    }
+  }, []);
 
   const loadData = async () => {
     setLoading(true);
@@ -85,37 +92,31 @@ function LendingContent() {
     }
   };
 
-  const loadAssets = async () => {
-    try {
-      const res = await api.get('/assets');
-      setAssets(res.data);
-
-      // Auto-open borrow dialog if assetCode is in URL
-      const code = searchParams.get('assetCode');
-      if (code) {
-        setAssetCode(code);
-        const found = res.data.find((a: any) => a.code?.toLowerCase() === code.toLowerCase() || a.id === code);
-        if (found) {
-          setSelectedAsset(found);
-          setConditionBefore(found.condition || 'GOOD');
-          setIsBorrowDialogOpen(true);
-          toast.success(`Aset ditemukan: ${found.name}`);
-        }
-      }
-    } catch (e) {
-      console.error(e);
-    }
+  const openDetailDialog = (lending: any) => {
+    setSelectedLending(lending);
+    setIsDetailDialogOpen(true);
   };
 
-  const handleScanOrSearch = () => {
-    // Simple search by code
-    const found = assets.find(a => a.code?.toLowerCase() === assetCode.toLowerCase() || a.id === assetCode);
-    if (found) {
-      setSelectedAsset(found);
-      setConditionBefore(found.condition || 'GOOD');
-      toast.success(`Aset ditemukan: ${found.name}`);
-    } else {
-      toast.error('Aset tidak ditemukan. Pastikan kode benar.');
+  const handleSearchAsset = async (codeToSearch: string) => {
+    const code = codeToSearch || assetCode;
+    if (!code) return;
+
+    setSearchingAsset(true);
+    try {
+      const res = await api.get('/assets', { params: { search: code, limit: 1 } });
+      const found = res.data.items?.[0]; // Backend response is { items, meta }
+      if (found && (found.code?.toLowerCase() === code.toLowerCase() || found.id === code)) {
+        setSelectedAsset(found);
+        setConditionBefore(found.condition || 'GOOD');
+        setIsBorrowDialogOpen(true);
+        toast.success(`Aset ditemukan: ${found.name}`);
+      } else {
+        toast.error('Aset tidak ditemukan. Pastikan kode benar.');
+      }
+    } catch (e) {
+      toast.error('Gagal mencari aset');
+    } finally {
+      setSearchingAsset(false);
     }
   };
 
@@ -181,6 +182,7 @@ function LendingContent() {
     setBorrowerName(user?.fullName || user?.username || '');
     setConditionBefore('GOOD');
     setNotes('');
+    setIsScannerOpen(false);
   };
 
   // Pre-fill borrower name when dialog opens
@@ -409,40 +411,45 @@ function LendingContent() {
                   placeholder="Masukkan kode aset..."
                   value={assetCode}
                   onChange={(e) => setAssetCode(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') handleSearchAsset(assetCode);
+                  }}
                 />
-                <Button variant="outline" onClick={() => {
-                  const scannerDiv = document.getElementById('reader');
-                  if (scannerDiv) {
-                    // If already open, maybe close? Simple toggle for now
-                    scannerDiv.innerHTML = '';
-                    const scanner = new Html5QrcodeScanner(
-                      "reader",
-                      { fps: 10, qrbox: { width: 250, height: 250 } },
-                        /* verbose= */ false
-                    );
-                    scanner.render((decodedText: string) => {
-                      setAssetCode(decodedText);
-                      // Trigger search automatically
-                      const found = assets.find(a => a.code?.toLowerCase() === decodedText.toLowerCase() || a.id === decodedText);
-                      if (found) {
-                        setSelectedAsset(found);
-                        setConditionBefore(found.condition || 'GOOD');
-                        toast.success(`Aset ditemukan: ${found.name}`);
-                        scanner.clear();
-                      } else {
-                        toast.error('Aset tidak ditemukan di database.');
-                      }
-                    }, (error: any) => {
-                      // console.warn(error);
-                    });
-                  }
-                }}>
-                  <QrCode className="h-4 w-4" /> Scan
+                <Button
+                  variant="outline"
+                  onClick={() => setIsScannerOpen(!isScannerOpen)}
+                  className={isScannerOpen ? "bg-primary/10 text-primary border-primary/20" : ""}
+                >
+                  <QrCode className="h-4 w-4 mr-2" />
+                  {isScannerOpen ? "Tutup" : "Scan"}
+                </Button>
+                <Button variant="secondary" onClick={() => handleSearchAsset(assetCode)} disabled={searchingAsset}>
+                  {searchingAsset ? <Loader2 className="h-4 w-4 animate-spin" /> : "Cari"}
                 </Button>
               </div>
-              <div id="reader" className="w-full"></div>
+
+              {isScannerOpen && (
+                <div className="mt-4 border rounded-lg overflow-hidden relative group">
+                  <QRScanner
+                    onScan={(code) => {
+                      setAssetCode(code);
+                      handleSearchAsset(code);
+                    }}
+                    onClose={() => setIsScannerOpen(false)}
+                  />
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="absolute top-2 right-2 z-10 bg-background/50 backdrop-blur"
+                    onClick={() => setIsScannerOpen(false)}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              )}
+
               {selectedAsset && (
-                <div className="text-sm text-green-600 bg-green-50 p-2 rounded">
+                <div className="text-sm text-green-600 bg-green-50 p-2 rounded animate-in fade-in slide-in-from-top-1">
                   ✓ {selectedAsset.name} ({selectedAsset.code})
                 </div>
               )}

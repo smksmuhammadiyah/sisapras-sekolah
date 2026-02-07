@@ -145,11 +145,64 @@ export class AssetsService {
     });
   }
 
-  async findAll() {
-    return this.prisma.asset.findMany({
-      where: { deletedAt: null },
-      include: { room: true },
-    });
+  async findAll(query?: {
+    page?: number;
+    limit?: number | string;
+    search?: string;
+    category?: string;
+    condition?: string;
+    roomId?: string;
+    assetStatus?: string;
+  }) {
+    // Parse numeric query params
+    const page = Number(query?.page) || 1;
+    let limit = Number(query?.limit) || 50;
+    const isAll = query?.limit === 'all';
+
+    if (isAll) {
+      limit = 1000000; // Practically all
+    }
+
+    const skip = isAll ? 0 : (page - 1) * limit;
+
+    const where: Prisma.AssetWhereInput = {
+      deletedAt: null,
+    };
+
+    if (query?.search) {
+      where.OR = [
+        { name: { contains: query.search, mode: 'insensitive' } },
+        { code: { contains: query.search, mode: 'insensitive' } },
+        { brand: { contains: query.search, mode: 'insensitive' } },
+        { category: { contains: query.search, mode: 'insensitive' } },
+      ];
+    }
+
+    if (query?.category) where.category = query.category;
+    if (query?.condition) where.condition = query.condition as any;
+    if (query?.roomId) where.roomId = query.roomId;
+    if (query?.assetStatus) where.assetStatus = query.assetStatus;
+
+    const [items, total] = await Promise.all([
+      this.prisma.asset.findMany({
+        where,
+        include: { room: true },
+        skip,
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+      }),
+      this.prisma.asset.count({ where }),
+    ]);
+
+    return {
+      items,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
   }
 
   async findOne(id: string) {

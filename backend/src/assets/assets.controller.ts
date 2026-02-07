@@ -7,6 +7,7 @@ import {
   UseGuards,
   Delete,
   Patch,
+  Query,
 } from '@nestjs/common';
 import { AssetsService } from './assets.service';
 import { CreateAssetDto } from './dto/create-asset.dto';
@@ -28,8 +29,8 @@ export class AssetsController {
   }
 
   @Get()
-  findAll() {
-    return this.assetsService.findAll();
+  findAll(@Query() query: any) {
+    return this.assetsService.findAll(query);
   }
 
   @Get('trash/all')

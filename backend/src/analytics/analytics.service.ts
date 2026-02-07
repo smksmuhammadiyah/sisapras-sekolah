@@ -4,7 +4,7 @@ import { AssetCondition, ProcurementStatus } from '@prisma/client';
 
 @Injectable()
 export class AnalyticsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) { }
 
   async getDashboardStats() {
     // 1. Asset Conditions (Good, Broken Light, Broken Heavy)
@@ -97,5 +97,16 @@ export class AnalyticsService {
       brokenAssets,
       upcomingServices,
     };
+  }
+
+  async getSummaryStats() {
+    const [assets, rooms, audits, services] = await Promise.all([
+      this.prisma.asset.count({ where: { deletedAt: null } }),
+      this.prisma.room.count({ where: { deletedAt: null } }),
+      this.prisma.audit.count(),
+      this.prisma.service.count(),
+    ]);
+
+    return { assets, rooms, audits, services };
   }
 }

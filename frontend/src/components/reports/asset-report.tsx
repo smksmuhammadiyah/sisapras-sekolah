@@ -34,8 +34,13 @@ export function AssetReportButton() {
   // Load data & settings when dialog opens
   useEffect(() => {
     if (open) {
-      // Fetch Assets
-      api.get('/assets').then(res => setData(res.data)).catch(console.error);
+      // Fetch Assets - use limit=all to get everything for the report
+      api.get('/assets', { params: { limit: 'all' } })
+        .then(res => {
+          // Response is now { items, meta }
+          setData(res.data.items || []);
+        })
+        .catch(console.error);
 
       // Fetch School Settings for Header & Signatures
       const fetchSettings = async () => {

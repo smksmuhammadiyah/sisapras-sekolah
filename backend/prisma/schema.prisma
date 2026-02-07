@@ -53,10 +53,19 @@ model Asset {
   imageUrl      String?
   assetStatus   String?
   notes         String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
   room          Room?          @relation(fields: [roomId], references: [id])
   auditItems    AuditItem[]
   lendings      Lending[]
   services      Service[]
+
+  @@index([name])
+  @@index([category])
+  @@index([condition])
+  @@index([origin])
+  @@index([deletedAt])
+  @@index([createdAt])
 }
 
 model Audit {

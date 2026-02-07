@@ -1,11 +1,16 @@
 "use client";
 
 import { HeroSection } from '@/components/landing/hero';
-import { ContextSection, SolutionSection } from '@/components/landing/story-sections';
-import { VisualStorySection } from '@/components/landing/visual-story';
-import { RoleBasedSection } from '@/components/landing/role-tabs';
-import { FlowSection, TrustSection, CTAEmotionalSection } from '@/components/landing/interactive-sections';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
+
+const ContextSection = dynamic(() => import('@/components/landing/story-sections').then(mod => mod.ContextSection));
+const SolutionSection = dynamic(() => import('@/components/landing/story-sections').then(mod => mod.SolutionSection));
+const VisualStorySection = dynamic(() => import('@/components/landing/visual-story').then(mod => mod.VisualStorySection));
+const RoleBasedSection = dynamic(() => import('@/components/landing/role-tabs').then(mod => mod.RoleBasedSection));
+const FlowSection = dynamic(() => import('@/components/landing/interactive-sections').then(mod => mod.FlowSection));
+const TrustSection = dynamic(() => import('@/components/landing/interactive-sections').then(mod => mod.TrustSection));
+const CTAEmotionalSection = dynamic(() => import('@/components/landing/interactive-sections').then(mod => mod.CTAEmotionalSection));
 
 export default function Home() {
   return (

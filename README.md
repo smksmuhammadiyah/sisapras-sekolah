@@ -28,6 +28,7 @@ Selamat datang di repositori **SISAPRAS**, sebuah solusi enterprise-grade untuk 
 9.  [Integrasi & Dokumentasi Tambahan](#-integrasi--dokumentasi-tambahan)
     -   [Setup Email (Gmail)](#setup-email)
     -   [Testing & QA](#testing--qa)
+    -   [Git & Workflow (Branching)](#git--workflow-branching)
 10. [Troubleshooting](#-troubleshooting)
 11. [Roadmap Pengembangan](#-roadmap-pengembangan)
 12. [Kontribusi & Lisensi](#-kontribusi--lisensi)
@@ -299,6 +300,10 @@ Panduan lengkap cara mengaktifkan fitur email menggunakan Gmail (termasuk cara g
 ### Testing & QA
 Panduan cara menjalankan Unit Test, E2E Test, dan skenario Pengetesan Manual (UAT):
 👉 **Baca: [TESTING.md](./TESTING.md)**
+
+### Git & Feature Branching
+Panduan cara menambah fitur baru dengan aman menggunakan branch agar tidak merusak kode utama:
+👉 **Baca: [GIT_GUIDE.md](./GIT_GUIDE.md)**
 
 ---
 

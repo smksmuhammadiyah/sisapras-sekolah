@@ -13,11 +13,16 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Plus, Eye, Edit, Trash } from 'lucide-react';
+import { Plus, Eye, Edit, Trash, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { AssetImportDialog } from '@/components/assets/asset-import-dialog';
 import { AssetReportButton } from '@/components/reports/asset-report';
 import { DeleteConfirmDialog } from '@/components/ui/delete-confirm-dialog';
+import dynamic from 'next/dynamic';
+
+const AssetImportDialog = dynamic(() => import('@/components/assets/asset-import-dialog').then(mod => mod.AssetImportDialog), {
+  loading: () => <Button variant="outline" disabled><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Loading...</Button>,
+  ssr: false
+});
 
 interface Asset {
   id: string;
@@ -35,32 +40,48 @@ interface Asset {
 
 export default function AssetListPage() {
   const [assets, setAssets] = useState<Asset[]>([]);
-  const [filteredAssets, setFilteredAssets] = useState<Asset[]>([]);
+  const [filteredAssets, setFilteredAssets] = useState<Asset[]>([]); // We keep this for now but will use it less
   const [searchTerm, setSearchTerm] = useState('');
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [assetToDelete, setAssetToDelete] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    fetchAssets();
-  }, []);
+    fetchAssets(page, searchTerm);
+  }, [page]);
 
+  // Debounce search
   useEffect(() => {
-    const lower = searchTerm.toLowerCase();
-    setFilteredAssets(assets.filter(a =>
-      a.name.toLowerCase().includes(lower) ||
-      a.code.toLowerCase().includes(lower) ||
-      a.category.toLowerCase().includes(lower)
-    ));
-  }, [searchTerm, assets]);
+    const timer = setTimeout(() => {
+      if (page !== 1) setPage(1);
+      else fetchAssets(1, searchTerm);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
 
-  const fetchAssets = async () => {
+  const fetchAssets = async (p: number, search: string) => {
+    setIsLoading(true);
     try {
-      const res = await api.get('/assets');
-      setAssets(res.data);
+      const res = await api.get('/assets', {
+        params: {
+          page: p,
+          limit: 20,
+          search: search
+        }
+      });
+      // The backend now returns { items, meta }
+      const { items, meta } = res.data;
+      setAssets(items);
+      setFilteredAssets(items); // Since server already filtered
+      setTotalPages(meta.totalPages);
     } catch (error) {
       console.error(error);
       toast.error('Gagal mengambil data aset');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -72,7 +93,8 @@ export default function AssetListPage() {
       await api.delete(`/assets/${id}`);
 
       // Optimistic update
-      setAssets(assets.filter(a => a.id !== id));
+      setAssets(prev => prev.filter(a => a.id !== id));
+      setFilteredAssets(prev => prev.filter(a => a.id !== id));
 
       toast.success("Aset berhasil dihapus", {
         action: {
@@ -81,7 +103,7 @@ export default function AssetListPage() {
             try {
               await api.patch(`/assets/${id}/restore`);
               toast.success("Aset dikembalikan");
-              fetchAssets();
+              fetchAssets(page, searchTerm);
             } catch (e) {
               toast.error("Gagal mengembalikan aset");
             }
@@ -94,7 +116,7 @@ export default function AssetListPage() {
       setAssetToDelete(null);
     } catch (error) {
       toast.error('Gagal menghapus aset');
-      fetchAssets();
+      fetchAssets(page, searchTerm);
     } finally {
       setIsDeleting(false);
     }
@@ -117,7 +139,7 @@ export default function AssetListPage() {
         <div className="flex items-center gap-2 w-full md:w-auto">
           <SearchInput onSearch={setSearchTerm} className="w-full md:w-64" placeholder="Cari aset..." />
           <AssetReportButton />
-          <AssetImportDialog onSuccess={fetchAssets} />
+          <AssetImportDialog onSuccess={() => fetchAssets(page, searchTerm)} />
           <Button asChild>
             <Link href="/dashboard/assets/new">
               <Plus className="mr-2 h-4 w-4" /> Tambah Aset
@@ -126,7 +148,12 @@ export default function AssetListPage() {
         </div>
       </div>
 
-      <div className="rounded-md border shadow-sm bg-white dark:bg-slate-950 overflow-x-auto">
+      <div className="rounded-md border shadow-sm bg-white dark:bg-slate-950 overflow-x-auto relative">
+        {isLoading && (
+          <div className="absolute inset-0 bg-white/50 dark:bg-slate-950/50 flex items-center justify-center z-10 backdrop-blur-[1px]">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          </div>
+        )}
         <Table>
           <TableHeader>
             <TableRow>
@@ -177,7 +204,7 @@ export default function AssetListPage() {
                 </TableCell>
               </TableRow>
             ))}
-            {filteredAssets.length === 0 && (
+            {filteredAssets.length === 0 && !isLoading && (
               <TableRow>
                 <TableCell colSpan={9} className="text-center h-24 text-muted-foreground">
                   {searchTerm ? 'Tidak ada aset yang cocok dengan pencarian.' : 'Belum ada data aset.'}
@@ -187,6 +214,32 @@ export default function AssetListPage() {
           </TableBody>
         </Table>
       </div>
+
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between px-2 py-4">
+          <div className="text-sm text-muted-foreground">
+            Halaman {page} dari {totalPages}
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setPage(p => Math.max(1, p - 1))}
+              disabled={page === 1 || isLoading}
+            >
+              Sebelumnya
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+              disabled={page === totalPages || isLoading}
+            >
+              Selanjutnya
+            </Button>
+          </div>
+        </div>
+      )}
 
       <DeleteConfirmDialog
         open={isDeleteDialogOpen}

@@ -3,11 +3,16 @@
 import { useEffect, useState } from 'react';
 import api from '@/lib/api';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Package, ClipboardList, AlertTriangle, Hammer } from 'lucide-react';
+import { Package, ClipboardList, AlertTriangle, Hammer, Loader2 } from 'lucide-react';
 import { QuickStart } from '@/components/dashboard/QuickStart';
-import { DashboardCharts } from '@/components/dashboard/dashboard-charts';
 import { HealthStatusWidget } from '@/components/dashboard/health-status';
 import { RoleGuard } from '@/components/auth/role-guard';
+import dynamic from 'next/dynamic';
+
+const DashboardCharts = dynamic(() => import('@/components/dashboard/dashboard-charts').then(mod => mod.DashboardCharts), {
+  loading: () => <div className="flex justify-center p-12"><Loader2 className="animate-spin h-8 w-8 text-primary" /></div>,
+  ssr: false
+});
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState({
@@ -18,16 +23,10 @@ export default function AdminDashboard() {
   });
 
   useEffect(() => {
-    // In a real app, fetch optimized stats endpoint
     const fetchStats = async () => {
       try {
-        const [assets, rooms, audits, services] = await Promise.all([
-          api.get('/assets').then(r => r.data.length),
-          api.get('/rooms').then(r => r.data.length),
-          api.get('/audits').then(r => r.data.length),
-          api.get('/services').then(r => r.data.length),
-        ]);
-        setStats({ assets, rooms, audits, services });
+        const res = await api.get('/analytics/summary');
+        setStats(res.data);
       } catch (e) {
         console.error("Failed to fetch stats");
       }
