@@ -38,7 +38,7 @@ export class SettingsController {
   @Roles(Role.ADMIN)
   async downloadBackup(@Res() res: Response) {
     const filePath = await this.settingsService.generateBackup();
-    res.download(filePath, (err) => {
+    res.download(filePath, `backup-${new Date().toISOString()}.json`, (err) => {
       // Clean up the file after it's sent
       if (!err) {
         fs.unlinkSync(filePath);
@@ -55,7 +55,7 @@ export class SettingsController {
     storage: diskStorage({
       destination: './temp-restores',
       filename: (req, file, cb) => {
-        cb(null, `restore-${Date.now()}.sql`);
+        cb(null, `restore-${Date.now()}.json`);
       }
     })
   }))
