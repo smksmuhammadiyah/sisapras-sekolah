@@ -12,9 +12,9 @@ import * as fs from 'fs';
 
 import { Prisma } from '@prisma/client';
 
-const restoreDir = './temp-restores';
+const restoreDir = path.join('/tmp', 'temp-restores');
 if (!fs.existsSync(restoreDir)) {
-  fs.mkdirSync(restoreDir);
+  fs.mkdirSync(restoreDir, { recursive: true });
 }
 
 @Controller('settings')
@@ -38,10 +38,19 @@ export class SettingsController {
   @Roles(Role.ADMIN)
   async downloadBackup(@Res() res: Response) {
     const filePath = await this.settingsService.generateBackup();
-    res.download(filePath, `backup-${new Date().toISOString()}.json`, (err) => {
-      // Clean up the file after it's sent
+    const fileName = `backup-${new Date().toISOString()}.json`;
+
+    res.download(filePath, fileName, (err) => {
       if (!err) {
-        fs.unlinkSync(filePath);
+        // Clean up the file after it's sent
+        // Note: usage of fs.unlinkSync is fine here for temporary files
+        try {
+          if (fs.existsSync(filePath)) {
+            fs.unlinkSync(filePath);
+          }
+        } catch (e) {
+          console.error('Error cleaning up backup file:', e);
+        }
       } else {
         console.error('Download error:', err);
       }
@@ -53,7 +62,13 @@ export class SettingsController {
   @Roles(Role.ADMIN)
   @UseInterceptors(FileInterceptor('file', {
     storage: diskStorage({
-      destination: './temp-restores',
+      destination: (req, file, cb) => {
+        const dir = path.join('/tmp', 'temp-restores');
+        if (!fs.existsSync(dir)) {
+          fs.mkdirSync(dir, { recursive: true });
+        }
+        cb(null, dir);
+      },
       filename: (req, file, cb) => {
         cb(null, `restore-${Date.now()}.json`);
       }

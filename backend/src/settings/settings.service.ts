@@ -86,10 +86,10 @@ export class SettingsService {
 
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
       const fileName = `backup-${timestamp}.json`;
-      const tempDir = path.join(process.cwd(), 'temp-backups');
+      const tempDir = path.join('/tmp', 'temp-backups');
 
       if (!fs.existsSync(tempDir)) {
-        fs.mkdirSync(tempDir);
+        fs.mkdirSync(tempDir, { recursive: true });
       }
 
       const filePath = path.join(tempDir, fileName);
