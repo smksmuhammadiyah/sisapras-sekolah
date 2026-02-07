@@ -9,12 +9,17 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import * as path from 'path';
 import * as fs from 'fs';
+import * as os from 'os';
 
 import { Prisma } from '@prisma/client';
 
-const restoreDir = path.join('/tmp', 'temp-restores');
+const restoreDir = path.join(os.tmpdir(), 'temp-restores');
 if (!fs.existsSync(restoreDir)) {
-  fs.mkdirSync(restoreDir, { recursive: true });
+  try {
+    fs.mkdirSync(restoreDir, { recursive: true });
+  } catch (err) {
+    if (err.code !== 'EEXIST') throw err;
+  }
 }
 
 @Controller('settings')
@@ -63,9 +68,13 @@ export class SettingsController {
   @UseInterceptors(FileInterceptor('file', {
     storage: diskStorage({
       destination: (req, file, cb) => {
-        const dir = path.join('/tmp', 'temp-restores');
+        const dir = path.join(os.tmpdir(), 'temp-restores');
         if (!fs.existsSync(dir)) {
-          fs.mkdirSync(dir, { recursive: true });
+          try {
+            fs.mkdirSync(dir, { recursive: true });
+          } catch (err) {
+            if (err.code !== 'EEXIST') throw err;
+          }
         }
         cb(null, dir);
       },

@@ -5,6 +5,7 @@ import { exec } from 'child_process';
 import { promisify } from 'util';
 import * as path from 'path';
 import * as fs from 'fs';
+import * as os from 'os';
 
 const execPromise = promisify(exec);
 
@@ -86,10 +87,14 @@ export class SettingsService {
 
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
       const fileName = `backup-${timestamp}.json`;
-      const tempDir = path.join('/tmp', 'temp-backups');
+      const tempDir = path.join(os.tmpdir(), 'temp-backups');
 
       if (!fs.existsSync(tempDir)) {
-        fs.mkdirSync(tempDir, { recursive: true });
+        try {
+          fs.mkdirSync(tempDir, { recursive: true });
+        } catch (err) {
+          if (err.code !== 'EEXIST') throw err;
+        }
       }
 
       const filePath = path.join(tempDir, fileName);
