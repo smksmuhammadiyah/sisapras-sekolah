@@ -18,13 +18,15 @@ async function bootstrap() {
     );
     app.enableCors({
       origin: [
-        'https://simsapras-smksmuh.vercel.app',
-        'https://sisapras-sekolah.vercel.app',
-        'http://localhost:3000',
-        'http://localhost:3001'
+        /https:\/\/simsapras-smksmuh\.vercel\.app$/,
+        /https:\/\/sisapras-sekolah\.vercel\.app$/,
+        /http:\/\/localhost:3000$/,
+        /http:\/\/localhost:3001$/
       ],
       methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
       credentials: true,
+      preflightContinue: false,
+      optionsSuccessStatus: 204,
     });
     await app.init();
   }
