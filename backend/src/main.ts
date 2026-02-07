@@ -17,8 +17,13 @@ async function bootstrap() {
       new ValidationPipe({ whitelist: true, transform: true }),
     );
     app.enableCors({
-      origin: '*', // Allow all
-      methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+      origin: [
+        'https://simsapras-smksmuh.vercel.app',
+        'https://sisapras-sekolah.vercel.app',
+        'http://localhost:3000',
+        'http://localhost:3001'
+      ],
+      methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
       credentials: true,
     });
     await app.init();

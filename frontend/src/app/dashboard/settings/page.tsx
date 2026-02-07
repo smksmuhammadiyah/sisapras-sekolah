@@ -297,7 +297,7 @@ export default function SettingsPage() {
                   </div>
                 </div>
                 <Button onClick={handleBackup} variant="outline" className="w-full md:w-auto">
-                  <Download className="mr-2 h-4 w-4" /> Buat Cadangan (.sql)
+                  <Download className="mr-2 h-4 w-4" /> Buat Cadangan (.json)
                 </Button>
               </CardContent>
             </Card>
@@ -322,11 +322,11 @@ export default function SettingsPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="restore-file">Pilih File Cadangan (.sql)</Label>
+                  <Label htmlFor="restore-file">Pilih File Cadangan (.json)</Label>
                   <Input
                     id="restore-file"
                     type="file"
-                    accept=".sql"
+                    accept=".json"
                     onChange={(e) => setRestoreFile(e.target.files?.[0] || null)}
                   />
                 </div>

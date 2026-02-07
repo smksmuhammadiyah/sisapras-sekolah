@@ -43,24 +43,58 @@ export class SettingsService {
   }
 
   async generateBackup() {
-    const dbUrl = process.env.DATABASE_URL;
-    if (!dbUrl) {
-      throw new InternalServerErrorException('Database URL not found in environment');
-    }
-
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-    const fileName = `backup-${timestamp}.sql`;
-    const tempDir = path.join(process.cwd(), 'temp-backups');
-
-    if (!fs.existsSync(tempDir)) {
-      fs.mkdirSync(tempDir);
-    }
-
-    const filePath = path.join(tempDir, fileName);
-
     try {
-      // Execute pg_dump. Using --dbname to pass the whole URL directly
-      await execPromise(`pg_dump --dbname="${dbUrl}" --file="${filePath}" --no-owner --no-privileges`);
+      // Fetch all data from all models
+      // We need to fetch in order of dependencies for reference, but for backup we just dump everything
+      const [
+        users,
+        academicYears,
+        assets,
+        services,
+        audits,
+        auditItems,
+        lendings,
+        schoolSettings,
+        reportSettings
+      ] = await Promise.all([
+        this.prisma.user.findMany(),
+        this.prisma.academicYear.findMany(),
+        this.prisma.asset.findMany(),
+        this.prisma.service.findMany(),
+        this.prisma.audit.findMany(),
+        this.prisma.auditItem.findMany(),
+        this.prisma.lending.findMany(),
+        this.prisma.schoolSettings.findMany(),
+        this.prisma.reportSettings.findMany(),
+      ]);
+
+      const backupData = {
+        version: '1.0',
+        timestamp: new Date().toISOString(),
+        data: {
+          users,
+          academicYears,
+          assets,
+          services,
+          audits,
+          auditItems,
+          lendings,
+          schoolSettings,
+          reportSettings
+        }
+      };
+
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+      const fileName = `backup-${timestamp}.json`;
+      const tempDir = path.join(process.cwd(), 'temp-backups');
+
+      if (!fs.existsSync(tempDir)) {
+        fs.mkdirSync(tempDir);
+      }
+
+      const filePath = path.join(tempDir, fileName);
+      fs.writeFileSync(filePath, JSON.stringify(backupData, null, 2));
+
       return filePath;
     } catch (error) {
       console.error('Backup failed:', error);
@@ -69,20 +103,73 @@ export class SettingsService {
   }
 
   async restoreDatabase(filePath: string) {
-    const dbUrl = process.env.DATABASE_URL;
-    if (!dbUrl) {
-      throw new InternalServerErrorException('Database URL not found in environment');
-    }
-
     try {
-      // In a real restore, you might want to drop schemas or tables first, 
-      // but for simplicity with psql, we'll just run the script.
-      // CAUTION: This can be destructive or cause conflicts if not handled carefully.
-      await execPromise(`psql --dbname="${dbUrl}" --file="${filePath}"`);
+      const fileContent = fs.readFileSync(filePath, 'utf-8');
+      const backup = JSON.parse(fileContent);
+
+      if (!backup.data) {
+        throw new Error('Format file backup tidak valid');
+      }
+
+      const {
+        users,
+        academicYears,
+        assets,
+        services,
+        audits,
+        auditItems,
+        lendings,
+        schoolSettings,
+        reportSettings
+      } = backup.data;
+
+      // Use interactive transaction to ensure atomicity
+      await this.prisma.$transaction(async (tx) => {
+        // 1. Clean up existing data (Delete in reverse dependency order)
+        await tx.auditItem.deleteMany();
+        await tx.audit.deleteMany();
+        await tx.lending.deleteMany();
+        await tx.service.deleteMany();
+        await tx.asset.deleteMany();
+        await tx.academicYear.deleteMany();
+        await tx.schoolSettings.deleteMany();
+        await tx.reportSettings.deleteMany();
+        // Users are kept if possible, or we might need to handle current admin session.
+        // For full restore, we usually replace everything.
+        // CAUTION: Deleting users might kill current session if not careful.
+        // Let's delete all users EXCEPT the one initiating if possible, or just all.
+        // For simplicity and correctness of restore, we delete all.
+        await tx.user.deleteMany();
+
+        // 2. Insert new data (Insert in dependency order)
+        // Users
+        if (users?.length > 0) await tx.user.createMany({ data: users });
+
+        // Settings
+        if (schoolSettings?.length > 0) await tx.schoolSettings.createMany({ data: schoolSettings });
+        if (reportSettings?.length > 0) await tx.reportSettings.createMany({ data: reportSettings });
+
+        // Years
+        if (academicYears?.length > 0) await tx.academicYear.createMany({ data: academicYears });
+
+        // Assets
+        if (assets?.length > 0) await tx.asset.createMany({ data: assets });
+
+        // Services
+        if (services?.length > 0) await tx.service.createMany({ data: services });
+
+        // Lendings
+        if (lendings?.length > 0) await tx.lending.createMany({ data: lendings });
+
+        // Audits (require header then items)
+        if (audits?.length > 0) await tx.audit.createMany({ data: audits });
+        if (auditItems?.length > 0) await tx.auditItem.createMany({ data: auditItems });
+      });
+
       return { success: true, message: 'Database berhasil dipulihkan' };
     } catch (error) {
       console.error('Restore failed:', error);
-      throw new InternalServerErrorException('Gagal memulihkan database');
+      throw new InternalServerErrorException('Gagal memulihkan database: ' + (error.message || 'Error validasi data'));
     } finally {
       // Clean up the temp file after restore attempt
       if (fs.existsSync(filePath)) {
