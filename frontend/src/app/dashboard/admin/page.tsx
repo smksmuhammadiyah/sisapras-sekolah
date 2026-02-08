@@ -36,8 +36,10 @@ export default function AdminDashboard() {
 
   return (
     <RoleGuard allowedRoles={['ADMIN']}>
-      <div className="space-y-16">
-        <h1 className="text-4xl font-bold tracking-tight text-slate-900 dark:text-slate-100">Beranda Wakasek Sarpras</h1>
+      <div className="space-y-8 md:space-y-12 lg:space-y-16">
+        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
+          Beranda Wakasek Sarpras
+        </h1>
 
         <div className="space-y-8">
           <QuickStart role="ADMIN" />

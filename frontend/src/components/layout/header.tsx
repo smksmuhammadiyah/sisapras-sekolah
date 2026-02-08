@@ -40,13 +40,9 @@ export function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-40 bg-white/80 dark:bg-slate-950/80 backdrop-blur-sm border-b px-6 py-3 flex items-center justify-between h-16">
-      <div className="font-semibold text-lg text-slate-800 dark:text-slate-200">
-        {/* We can show breadcrumbs here later */}
-        {/* For now, maybe just generic branding or nothing if each page has H1 */}
-        {/* Actually most pages have their own H1. Let's keep this clean or maybe just User greeting? */}
-        {/* Let's show current section name for context since we might scroll */}
-        <span className="hidden md:inline-block text-muted-foreground font-normal">SIM-SAPRAS &nbsp;/&nbsp; </span> {getTitle()}
+    <header className="sticky top-0 z-40 flex h-16 w-full items-center justify-between border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-950/80 px-4 sm:px-8 backdrop-blur-xl">
+      <div className="font-semibold text-base sm:text-lg text-slate-800 dark:text-slate-200 truncate pr-4">
+        <span className="hidden sm:inline-block text-muted-foreground font-normal">SIM-SAPRAS &nbsp;/&nbsp; </span> {getTitle()}
       </div>
 
       <div className="flex items-center gap-4">

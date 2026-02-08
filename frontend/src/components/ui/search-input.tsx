@@ -13,7 +13,6 @@ interface SearchInputProps {
 
 export function SearchInput({ onSearch, placeholder = "Cari data...", className }: SearchInputProps) {
   const [value, setValue] = useState("");
-  // Simple internal debounce if hook not available, but let's assume we implement it or use simple timeout
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -24,12 +23,12 @@ export function SearchInput({ onSearch, placeholder = "Cari data...", className 
   }, [value, onSearch]);
 
   return (
-    <div className={`relative ${className}`}>
-      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+    <div className={`relative flex items-center w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 shadow-sm transition-all focus-within:ring-2 focus-within:ring-primary/20 ${className}`}>
+      <Search className="absolute left-3 h-4 w-4 text-slate-400" />
       <Input
         type="search"
         placeholder={placeholder}
-        className="pl-9 bg-white dark:bg-slate-950"
+        className="pl-9 border-none bg-transparent shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 h-10 w-full"
         value={value}
         onChange={(e) => setValue(e.target.value)}
       />

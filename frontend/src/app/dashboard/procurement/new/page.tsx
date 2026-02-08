@@ -152,7 +152,7 @@ export default function NewProcurementPage() {
                     type="number"
                     min="1"
                     value={item.quantity}
-                    onChange={(e) => updateItem(index, 'quantity', parseInt(e.target.value))}
+                    onChange={(e) => updateItem(index, 'quantity', e.target.value ? parseInt(e.target.value) : 1)}
                     className="bg-white"
                   />
                 </div>
@@ -162,7 +162,7 @@ export default function NewProcurementPage() {
                     type="number"
                     min="0"
                     value={item.priceEst}
-                    onChange={(e) => updateItem(index, 'priceEst', parseInt(e.target.value))}
+                    onChange={(e) => updateItem(index, 'priceEst', e.target.value ? parseInt(e.target.value) : 0)}
                     className="bg-white"
                   />
                 </div>

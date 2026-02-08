@@ -38,6 +38,9 @@ const QRScanner = dynamic(() => import('@/components/ui/qr-scanner').then(mod =>
   ssr: false
 });
 
+import { SearchInput } from '@/components/ui/search-input';
+import { Pagination } from '@/components/ui/pagination-controls';
+
 export default function LendingPage() {
   return (
     <Suspense fallback={<div className="p-8 text-center text-muted-foreground">Memuat halaman peminjaman...</div>}>
@@ -50,6 +53,10 @@ function LendingContent() {
   const { user } = useAuth();
   const searchParams = useSearchParams();
   const [lendings, setLendings] = useState<any[]>([]);
+  const [filteredLendings, setFilteredLendings] = useState<any[]>([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
   const [loading, setLoading] = useState(true);
   const [isBorrowDialogOpen, setIsBorrowDialogOpen] = useState(false);
   const [isReturnDialogOpen, setIsReturnDialogOpen] = useState(false);
@@ -86,12 +93,29 @@ function LendingContent() {
     try {
       const res = await api.get('/lending');
       setLendings(res.data);
+      setFilteredLendings(res.data);
     } catch (e) {
       console.error(e);
     } finally {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (!searchTerm) {
+      setFilteredLendings(lendings);
+    } else {
+      const lower = searchTerm.toLowerCase();
+      setFilteredLendings(lendings.filter(l =>
+        (l.borrowerName || '').toLowerCase().includes(lower) ||
+        (l.asset?.name || '').toLowerCase().includes(lower) ||
+        (l.asset?.code || '').toLowerCase().includes(lower)
+      ));
+    }
+    setPage(1);
+  }, [searchTerm, lendings]);
+
+  const paginatedLendings = filteredLendings.slice((page - 1) * limit, page * limit);
 
   const openDetailDialog = (lending: any) => {
     setSelectedLending(lending);
@@ -220,22 +244,26 @@ function LendingContent() {
 
   return (
     <div className="space-y-6 font-sans">
-      <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
-        <div className="flex-1 min-w-0">
-          <h1 className="text-3xl font-extrabold tracking-[-0.05em] text-slate-900 dark:text-slate-100 font-heading">Peminjaman Barang</h1>
-          <p className="text-slate-500 mt-1 text-sm leading-relaxed max-w-2xl">Monitor riwayat peminjaman aset sekolah.</p>
-        </div>
-        <div className="shrink-0 w-full lg:w-auto">
-          <div className="flex gap-2 w-full lg:w-auto">
+      <div className="flex flex-col gap-6">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="flex-1 min-w-0">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-slate-100 font-heading truncate">Peminjaman Barang</h1>
+            <p className="text-slate-500 mt-1 text-xs sm:text-sm leading-relaxed max-w-2xl">Monitor riwayat peminjaman aset sekolah.</p>
+          </div>
+          <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+            {user?.role === 'ADMIN' && <LendingReportButton />}
             <Button
               size="sm"
               onClick={() => setIsBorrowDialogOpen(true)}
-              className="flex-1 lg:flex-none h-9 rounded-lg px-6 shadow-lg shadow-primary/20 font-bold"
+              className="rounded-lg px-4 h-9 shadow-lg shadow-primary/20 font-bold ml-auto sm:ml-0 transition-all hover:scale-[1.02]"
             >
               <Plus className="mr-2 h-4 w-4" /> Pinjam Barang
             </Button>
-            <LendingReportButton />
           </div>
+        </div>
+
+        <div className="w-full sm:max-w-md">
+          <SearchInput onSearch={setSearchTerm} className="w-full h-10 rounded-xl shadow-sm bg-white dark:bg-slate-950" placeholder="Cari peminjam, nama aset, atau kode..." />
         </div>
       </div>
 
@@ -289,29 +317,29 @@ function LendingContent() {
         <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
           <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">Log Peminjaman</h2>
           <Badge variant="secondary" className="text-[10px] font-bold px-2 py-0 border-none">
-            {lendings.length} AKTIVITAS
+            {filteredLendings.length} AKTIVITAS
           </Badge>
         </div>
 
-        <div className="overflow-x-auto">
-          <Table className="min-w-[800px]">
+        <div className="hidden md:block overflow-x-auto">
+          <Table>
             <TableHeader className="bg-slate-50/50 dark:bg-slate-900/50">
               <TableRow className="hover:bg-transparent border-slate-100 dark:border-slate-800">
                 <TableHead className="py-3 px-6 text-xs font-bold uppercase tracking-wider">Waktu</TableHead>
                 <TableHead className="text-xs font-bold uppercase tracking-wider">Peminjam</TableHead>
                 <TableHead className="text-xs font-bold uppercase tracking-wider">Aset Barang</TableHead>
-                <TableHead className="text-xs font-bold uppercase tracking-wider hidden md:table-cell">Kondisi</TableHead>
-                <TableHead className="text-xs font-bold uppercase tracking-wider">Status</TableHead>
+                <TableHead className="text-xs font-bold uppercase tracking-wider text-center">Kondisi</TableHead>
+                <TableHead className="text-xs font-bold uppercase tracking-wider text-center">Status</TableHead>
                 <TableHead className="text-right pr-6 text-xs font-bold uppercase tracking-wider">Aksi</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {loading ? (
                 <TableRow><TableCell colSpan={6} className="text-center h-40"><Loader2 className="h-8 w-8 animate-spin mx-auto text-primary opacity-20" /></TableCell></TableRow>
-              ) : lendings.length === 0 ? (
-                <TableRow><TableCell colSpan={6} className="text-center h-40 text-slate-400 italic text-sm">Belum ada sirkulasi peminjaman.</TableCell></TableRow>
+              ) : filteredLendings.length === 0 ? (
+                <TableRow><TableCell colSpan={6} className="text-center h-40 text-slate-400 italic text-sm">{searchTerm ? 'Pencarian tidak membuahkan hasil.' : 'Belum ada sirkulasi peminjaman.'}</TableCell></TableRow>
               ) : (
-                lendings.map((l) => (
+                paginatedLendings.map((l) => (
                   <TableRow key={l.id} className="group/row transition-colors hover:bg-slate-50/50 dark:hover:bg-slate-900/50 border-slate-100 dark:border-slate-800">
                     <TableCell className="py-3 px-6">
                       <div className="flex flex-col text-[10px] font-bold uppercase text-slate-500">
@@ -321,8 +349,8 @@ function LendingContent() {
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
-                        <div className="h-7 w-7 rounded-md bg-slate-900 text-white flex items-center justify-center text-[10px] font-bold">
-                          {l.borrowerName?.charAt(0).toUpperCase()}
+                        <div className="h-7 w-7 rounded-md bg-slate-900 text-white flex items-center justify-center text-[10px] font-bold uppercase">
+                          {l.borrowerName?.charAt(0)}
                         </div>
                         <span className="text-sm font-bold text-slate-900 dark:text-slate-100">{l.borrowerName}</span>
                       </div>
@@ -331,12 +359,12 @@ function LendingContent() {
                       <div className="text-sm font-bold text-slate-900 dark:text-slate-100">{l.asset?.name || '-'}</div>
                       <div className="text-[10px] text-slate-400 uppercase tracking-wider">{l.asset?.code || '-'}</div>
                     </TableCell>
-                    <TableCell className="hidden md:table-cell">
-                      <div className="scale-75 origin-left">
+                    <TableCell className="text-center">
+                      <div className="inline-block scale-75">
                         {renderCondition(l.status === 'BORROWED' ? l.conditionAtBorrow : (l.conditionAtReturn || 'GOOD'))}
                       </div>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="text-center">
                       {l.status === 'BORROWED' ? (
                         <Badge className="bg-orange-500/10 text-orange-600 border-none rounded-md px-2 py-0 text-[10px] font-bold">DIPINJAM</Badge>
                       ) : (
@@ -344,7 +372,7 @@ function LendingContent() {
                       )}
                     </TableCell>
                     <TableCell className="text-right pr-6">
-                      <div className="flex justify-end gap-1 opacity-0 group-hover/row:opacity-100 transition-opacity">
+                      <div className="flex justify-end gap-1 opacity-100 md:opacity-0 group-hover/row:opacity-100 transition-opacity">
                         {l.status === 'BORROWED' && (
                           <Button
                             size="icon"
@@ -372,7 +400,98 @@ function LendingContent() {
             </TableBody>
           </Table>
         </div>
+
+        {/* Mobile View Cards */}
+        <div className="md:hidden divide-y divide-slate-100 dark:divide-slate-800 text-sm">
+          {loading ? (
+            <div className="p-12 text-center"><Loader2 className="h-8 w-8 animate-spin mx-auto text-primary opacity-20" /></div>
+          ) : filteredLendings.length === 0 ? (
+            <div className="p-12 text-center text-slate-400 italic">{searchTerm ? 'Pencarian tidak membuahkan hasil.' : 'Belum ada sirkulasi peminjaman.'}</div>
+          ) : (
+            paginatedLendings.map((l) => (
+              <div key={l.id} className="p-4 space-y-4 active:bg-slate-50 dark:active:bg-slate-900 transition-colors">
+                <div className="flex justify-between items-start">
+                  <div className="flex items-center gap-3">
+                    <div className="h-8 w-8 rounded-lg bg-slate-900 text-white flex items-center justify-center text-xs font-bold uppercase">
+                      {l.borrowerName?.charAt(0)}
+                    </div>
+                    <div className="flex flex-col gap-0.5">
+                      <span className="font-bold text-slate-900 dark:text-slate-100">{l.borrowerName}</span>
+                      <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
+                        {new Date(l.borrowDate).toLocaleDateString('id-ID', { day: '2-digit', month: 'short' })} • {new Date(l.borrowDate).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-slate-50/50 dark:bg-slate-900/50 rounded-xl p-3 border border-slate-200/50 dark:border-slate-800/50">
+                  <div className="flex flex-col">
+                    <span className="text-sm font-bold text-slate-800 dark:text-slate-200">{l.asset?.name || '-'}</span>
+                    <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">{l.asset?.code || '-'}</span>
+                  </div>
+                  <div className="mt-2 scale-75 origin-left">
+                    {renderCondition(l.status === 'BORROWED' ? l.conditionAtBorrow : (l.conditionAtReturn || 'GOOD'))}
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-3 pt-3 border-t border-slate-50 dark:border-slate-900/10">
+                  <div className="flex items-center justify-between px-1">
+                    <span className="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em]">Opsi Aksi</span>
+                    <div className="scale-90 origin-right">
+                      {l.status === 'BORROWED' ? (
+                        <Badge className="bg-orange-500/10 text-orange-600 border-none rounded-md px-2 py-0 text-[10px] font-bold">DIPINJAM</Badge>
+                      ) : (
+                        <Badge className="bg-green-500/10 text-green-600 border-none rounded-md px-2 py-0 text-[10px] font-bold">KEMBALI</Badge>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => openDetailDialog(l)}
+                      className="flex-1 h-9 text-xs gap-1.5 font-bold shadow-sm"
+                    >
+                      <Eye className="h-3.5 w-3.5" /> Detail
+                    </Button>
+                    {l.status === 'BORROWED' && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => openReturnDialog(l)}
+                        className="flex-1 h-9 text-xs gap-1.5 font-bold border-primary/20 text-primary hover:bg-primary/5 shadow-sm"
+                      >
+                        <RotateCcw className="h-3.5 w-3.5" /> Kembali
+                      </Button>
+                    )}
+                    {user?.role === 'ADMIN' && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => { setLendingToDelete(l.id); setIsDeleteDialogOpen(true); }}
+                        className="h-9 w-9 text-destructive border border-slate-100 dark:border-slate-800"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
       </div>
+
+      {filteredLendings.length > 0 && (
+        <Pagination
+          currentPage={page}
+          totalPages={Math.ceil(filteredLendings.length / limit)}
+          onPageChange={setPage}
+          itemsPerPage={limit}
+          onItemsPerPageChange={setLimit}
+          totalItems={filteredLendings.length}
+        />
+      )}
 
       {/* Borrow Dialog */}
       < Dialog open={isBorrowDialogOpen} onOpenChange={setIsBorrowDialogOpen} >

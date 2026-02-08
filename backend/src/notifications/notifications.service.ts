@@ -16,12 +16,10 @@ export class NotificationsService {
 
     if (isAdmin) {
       // 1. Low Stock
-      // 1. Low Stock
-      // const lowStockResult = await this.prisma.$queryRaw<{ count: bigint }[]>`
-      //   SELECT COUNT(*)::int as count FROM "StockItem" WHERE quantity <= "minStock"
-      // `;
-      // lowStockCount = Number(lowStockResult[0]?.count || 0);
-      lowStockCount = 0; // Temporary fix until StockItem table is created
+      const lowStockResult = await this.prisma.$queryRaw<{ count: bigint }[]>`
+        SELECT COUNT(*)::int as count FROM "StockItem" WHERE quantity <= "minStock"
+      `;
+      lowStockCount = Number(lowStockResult[0]?.count || 0);
 
       // 2. Pending Procurements
       pendingProcurementsCount = await this.prisma.procurement.count({

@@ -61,14 +61,14 @@ export function DashboardCharts() {
   }));
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mb-8">
       {/* Asset Condition Chart */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Kondisi Aset</CardTitle>
-          <CardDescription>Distribusi kondisi aset keseluruhan</CardDescription>
+      <Card className="border-slate-200 dark:border-slate-800 shadow-sm bg-white dark:bg-slate-950 overflow-hidden">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-lg font-bold">Kondisi Aset</CardTitle>
+          <CardDescription className="text-xs">Distribusi kondisi aset keseluruhan</CardDescription>
         </CardHeader>
-        <CardContent className="h-[300px]">
+        <CardContent className="h-[280px] sm:h-[320px] p-0 sm:p-6">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
@@ -76,38 +76,42 @@ export function DashboardCharts() {
                 cx="50%"
                 cy="50%"
                 labelLine={false}
-                outerRadius={80}
-                fill="#8884d8"
+                outerRadius="75%"
                 dataKey="value"
-                label={({ name, percent }: { name?: string | number; percent?: number }) => `${name || ''} ${(percent ? percent * 100 : 0).toFixed(0)}%`}
+                label={({ name, percent }: { name?: string | number; percent?: number }) => {
+                  if ((percent || 0) < 0.1) return ''; // Hide small labels to avoid overlap on mobile
+                  return `${name || ''} ${(percent ? percent * 100 : 0).toFixed(0)}%`;
+                }}
               >
                 {assetData.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={entry.color} />
                 ))}
               </Pie>
-              <Tooltip />
-              <Legend />
+              <Tooltip
+                contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
+                itemStyle={{ fontSize: '12px', fontWeight: 'bold' }}
+              />
+              <Legend wrapperStyle={{ fontSize: '10px', fontWeight: 'bold', textTransform: 'uppercase' }} />
             </PieChart>
           </ResponsiveContainer>
         </CardContent>
       </Card>
 
       {/* Procurement Status Chart */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Status Pengadaan</CardTitle>
-          <CardDescription>Overview status usulan pengadaan</CardDescription>
+      <Card className="border-slate-200 dark:border-slate-800 shadow-sm bg-white dark:bg-slate-950 overflow-hidden">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-lg font-bold">Status Pengadaan</CardTitle>
+          <CardDescription className="text-xs">Overview status usulan pengadaan</CardDescription>
         </CardHeader>
-        <CardContent className="h-[300px]">
+        <CardContent className="h-[280px] sm:h-[320px] p-0 sm:p-6">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
                 data={procurementData}
                 cx="50%"
                 cy="50%"
-                innerRadius={60}
-                outerRadius={80}
-                fill="#8884d8"
+                innerRadius="50%"
+                outerRadius="75%"
                 paddingAngle={5}
                 dataKey="value"
               >
@@ -115,33 +119,46 @@ export function DashboardCharts() {
                   <Cell key={`cell-${index}`} fill={entry.color} />
                 ))}
               </Pie>
-              <Tooltip />
-              <Legend />
+              <Tooltip
+                contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
+                itemStyle={{ fontSize: '12px', fontWeight: 'bold' }}
+              />
+              <Legend wrapperStyle={{ fontSize: '10px', fontWeight: 'bold', textTransform: 'uppercase' }} />
             </PieChart>
           </ResponsiveContainer>
         </CardContent>
       </Card>
 
       {/* Low Stock Bar Chart */}
-      <Card className="md:col-span-2">
-        <CardHeader>
-          <CardTitle>Stok Menipis (Top 5)</CardTitle>
-          <CardDescription>Item dengan stok paling sedikit</CardDescription>
+      <Card className="md:col-span-2 border-slate-200 dark:border-slate-800 shadow-sm bg-white dark:bg-slate-950 overflow-hidden">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-lg font-bold">Stok Menipis (Top 5)</CardTitle>
+          <CardDescription className="text-xs">Item dengan stok paling sedikit</CardDescription>
         </CardHeader>
-        <CardContent className="h-[300px]">
+        <CardContent className="h-[300px] p-2 sm:p-6">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
               data={stats.lowStockItems}
               layout="vertical"
-              margin={{ top: 5, right: 30, left: 40, bottom: 5 }}
+              margin={{ top: 5, right: 30, left: 10, bottom: 5 }}
             >
-              <CartesianGrid strokeDasharray="3 3" horizontal={false} />
-              <XAxis type="number" />
-              <YAxis dataKey="name" type="category" width={100} />
-              <Tooltip />
-              <Legend />
-              <Bar dataKey="quantity" name="Stok Saat Ini" fill="#ef4444" radius={[0, 4, 4, 0]} />
-              <Bar dataKey="limit" name="Batas Minimum" fill="#e5e7eb" radius={[0, 4, 4, 0]} />
+              <CartesianGrid strokeDasharray="3 3" horizontal={false} strokeOpacity={0.1} />
+              <XAxis type="number" hide />
+              <YAxis
+                dataKey="name"
+                type="category"
+                width={80}
+                fontSize={10}
+                fontWeight="bold"
+                tick={{ fill: '#64748b' }}
+              />
+              <Tooltip
+                contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
+                cursor={{ fill: 'transparent' }}
+              />
+              <Legend wrapperStyle={{ fontSize: '10px', fontWeight: 'bold', textTransform: 'uppercase', paddingTop: '10px' }} />
+              <Bar dataKey="quantity" name="Stok Saat Ini" fill="#ef4444" radius={[0, 4, 4, 0]} barSize={20} />
+              <Bar dataKey="limit" name="Batas Minimum" fill="#cbd5e1" radius={[0, 4, 4, 0]} barSize={20} />
             </BarChart>
           </ResponsiveContainer>
         </CardContent>

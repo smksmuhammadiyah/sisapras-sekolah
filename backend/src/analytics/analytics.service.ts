@@ -18,26 +18,12 @@ export class AnalyticsService {
 
     // 2. Low Stock Items (quantity <= minStock)
     // 2. Low Stock Items (quantity <= minStock)
-    // const lowStockItems = await this.prisma.stockItem.findMany({
-    //   where: {
-    //     quantity: {
-    //       lte: 5, // Threshold hardcoded or calculate from minStock? Let's use minStock if available or 5
-    //     },
-    //     // Better: where quantity <= minStock. But Prisma doesn't support field comparison in where naturally easily without raw query or separate check.
-    //     // Actually, let's just fetch all and filter or use raw query.
-    //     // Or simplified: fetch top 5 lowest stock.
-    //   },
-    //   take: 5,
-    //   orderBy: {
-    //     quantity: 'asc',
-    //   },
-    //   select: {
-    //     name: true,
-    //     quantity: true,
-    //     minStock: true,
-    //   },
-    // });
-    const lowStockItems: any[] = [];
+    const lowStockItems: any[] = await this.prisma.$queryRaw`
+      SELECT * FROM "StockItem"
+      WHERE quantity <= "minStock"
+      ORDER BY quantity ASC
+      LIMIT 5
+    `;
 
     // 3. Procurement Status
     const procurementStats = await this.prisma.procurement.groupBy({

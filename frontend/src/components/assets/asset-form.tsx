@@ -381,7 +381,12 @@ export function AssetForm({ initialData }: AssetFormProps) {
               <FormItem>
                 <FormLabel>Harga (Rp)</FormLabel>
                 <FormControl>
-                  <Input type="number" placeholder="560000" {...field} />
+                  <Input
+                    type="number"
+                    placeholder="560000"
+                    {...field}
+                    onChange={(e) => field.onChange(e.target.value)}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>

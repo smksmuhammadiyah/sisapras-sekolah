@@ -79,7 +79,13 @@ export default function NewStockItemPage() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Stok Minimum (Alert)</FormLabel>
-                  <FormControl><Input type="number" {...field} value={field.value as number} onChange={(e) => field.onChange(e.target.valueAsNumber)} /></FormControl>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      {...field}
+                      onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : 0)}
+                    />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}

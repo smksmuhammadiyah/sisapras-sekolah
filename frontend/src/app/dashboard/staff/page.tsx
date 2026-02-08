@@ -26,37 +26,49 @@ export default function StaffDashboard() {
   }, []);
 
   return (
-    <div className="p-8 space-y-6">
-      <h1 className="text-3xl font-bold">Beranda Petugas Sarpras</h1>
+    <div className="p-4 sm:p-6 md:p-8 space-y-6 max-w-7xl mx-auto">
+      <div className="flex flex-col gap-2 px-1">
+        <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-slate-100 font-heading">Beranda Petugas Sarpras</h1>
+        <p className="text-slate-500 text-xs sm:text-sm leading-relaxed">Selamat datang kembali. Berikut ringkasan tugas hari ini.</p>
+      </div>
 
       <QuickStart role="STAFF" />
 
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card>
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+        <Card className="border-slate-200 dark:border-slate-800 shadow-sm bg-white dark:bg-slate-950 px-1">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Audit Menunggu</CardTitle>
-            <ClipboardCheck className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-xs font-black uppercase tracking-widest text-slate-500">Audit Menunggu</CardTitle>
+            <div className="p-2 rounded-lg bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400">
+              <ClipboardCheck className="h-4 w-4" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.pendingAudits}</div>
+            <div className="text-3xl font-bold text-slate-900 dark:text-slate-100">{stats.pendingAudits}</div>
+            <p className="text-[10px] text-slate-400 mt-1 font-medium">Perlu verifikasi fisik segera</p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="border-slate-200 dark:border-slate-800 shadow-sm bg-white dark:bg-slate-950 px-1">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Aset Rusak</CardTitle>
-            <AlertCircle className="h-4 w-4 text-destructive" />
+            <CardTitle className="text-xs font-black uppercase tracking-widest text-slate-500">Aset Rusak</CardTitle>
+            <div className="p-2 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400">
+              <AlertCircle className="h-4 w-4" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-destructive">{stats.brokenAssets}</div>
+            <div className="text-3xl font-bold text-red-600 dark:text-red-500">{stats.brokenAssets}</div>
+            <p className="text-[10px] text-slate-400 mt-1 font-medium">Beban kerja perbaikan aktif</p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="border-slate-200 dark:border-slate-800 shadow-sm bg-white dark:bg-slate-950 px-1 sm:col-span-2 lg:col-span-1">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Jadwal Perbaikan</CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-xs font-black uppercase tracking-widest text-slate-500">Jadwal Perbaikan</CardTitle>
+            <div className="p-2 rounded-lg bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400">
+              <Calendar className="h-4 w-4" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.upcomingServices}</div>
+            <div className="text-3xl font-bold text-slate-900 dark:text-slate-100">{stats.upcomingServices}</div>
+            <p className="text-[10px] text-slate-400 mt-1 font-medium">Diagendakan minggu ini</p>
           </CardContent>
         </Card>
       </div>
