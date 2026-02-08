@@ -107,8 +107,8 @@ export default function StockTransactionPage() {
                     <Input
                       type="number"
                       placeholder="0"
-                      value={(field.value as number) ?? 0}
                       {...field}
+                      value={(field.value as number) ?? 0}
                       onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : 0)}
                     />
                   </FormControl>
