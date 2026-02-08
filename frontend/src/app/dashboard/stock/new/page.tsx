@@ -83,7 +83,7 @@ export default function NewStockItemPage() {
                     <Input
                       type="number"
                       {...field}
-                      value={field.value || 0}
+                      value={(field.value as number) ?? 0}
                       onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : 0)}
                     />
                   </FormControl>
